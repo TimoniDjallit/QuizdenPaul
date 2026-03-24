@@ -157,49 +157,49 @@ font-weight: 500;
 line-height: 1.45;
 }
 
-.options-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 10px;
-margin-bottom: 18px;
+/* ── FREE TEXT INPUT ── */
+.answer-area {
+margin-bottom: 14px;
 }
-@media (max-width: 480px) { .options-grid { grid-template-columns: 1fr; } }
-
-.option-btn {
+.answer-input {
+width: 100%;
 background: var(–surface);
-border: 1px solid rgba(255,255,255,0.08);
+border: 1px solid rgba(255,255,255,0.1);
 color: var(–text);
-padding: 16px 18px;
+padding: 18px 20px;
+border-radius: var(–radius);
+font-family: ‘DM Sans’, sans-serif;
+font-size: 16px;
+outline: none;
+transition: border-color 0.2s, box-shadow 0.2s;
+margin-bottom: 10px;
+}
+.answer-input:focus {
+border-color: var(–accent);
+box-shadow: 0 0 0 3px rgba(240,192,64,0.1);
+}
+.answer-input:disabled { opacity: 0.5; }
+.answer-input.correct { border-color: var(–correct); box-shadow: 0 0 0 3px rgba(62,207,142,0.1); }
+.answer-input.wrong   { border-color: var(–wrong);   box-shadow: 0 0 0 3px rgba(224,90,43,0.1); }
+
+.submit-btn {
+width: 100%;
+background: var(–surface2);
+color: var(–text);
+border: 1px solid rgba(255,255,255,0.1);
+padding: 16px;
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 20px;
+letter-spacing: 2px;
 border-radius: var(–radius);
 cursor: pointer;
-font-family: ‘DM Sans’, sans-serif;
-font-size: 14px;
-text-align: left;
-transition: border-color 0.2s, background 0.2s, transform 0.12s;
-line-height: 1.35;
+transition: border-color 0.2s, background 0.2s;
 }
-.option-btn:hover:not(:disabled) {
+.submit-btn:hover:not(:disabled) {
 border-color: var(–accent);
-background: rgba(240,192,64,0.05);
-transform: translateY(-1px);
+background: rgba(240,192,64,0.07);
 }
-.option-btn:disabled { cursor: default; }
-.option-btn.correct { border-color: var(–correct); background: rgba(62,207,142,0.1); color: var(–correct); }
-.option-btn.wrong   { border-color: var(–wrong);   background: rgba(224,90,43,0.1);  color: var(–wrong);  }
-
-.option-label {
-display: inline-flex;
-align-items: center;
-justify-content: center;
-width: 22px; height: 22px;
-border-radius: 5px;
-background: var(–surface2);
-font-size: 11px;
-font-weight: 700;
-margin-right: 10px;
-vertical-align: middle;
-flex-shrink: 0;
-}
+.submit-btn:disabled { opacity: 0.4; cursor: default; }
 
 .feedback-bar {
 background: var(–surface);
@@ -350,16 +350,12 @@ margin-bottom: 32px;
 </div>
 
 <script>
-  const LABELS = ['A','B','C','D'];
-
-  // All answered question IDs — persisted in localStorage so no repeats across sessions
   let seenIds = new Set(JSON.parse(localStorage.getItem('qm_seen') || '[]'));
 
-  let pool     = [];   // current batch
+  let pool     = [];
   let poolIdx  = 0;
-  let qNum     = 0;    // questions answered this session
+  let qNum     = 0;
   let answered = false;
-  let correctIdx  = 0;
   let correctText = '';
 
   // ── SCREENS ──
@@ -421,10 +417,12 @@ margin-bottom: 32px;
       if (fresh.length === 0) { continue; }
 
       pool = fresh.map(q => {
-        const correct = dec(q.correct_answer);
-        const opts    = shuffle([correct, ...q.incorrect_answers.map(dec)]);
-        seenIds.add(q.question); // mark as seen
-        return { category: dec(q.category), question: dec(q.question), options: opts, correct: opts.indexOf(correct) };
+        seenIds.add(q.question);
+        return {
+          category: dec(q.category),
+          question: dec(q.question),
+          correct_answer_raw: dec(q.correct_answer),
+        };
       });
 
       // Persist seen IDs
@@ -460,36 +458,52 @@ margin-bottom: 32px;
     const q = pool[poolIdx++];
     qNum++;
 
-    correctIdx  = q.correct;
-    correctText = q.options[q.correct];
+    correctText = q.correct_answer_raw;
 
     document.getElementById('qCounter').innerHTML = `${qNum}<span>questions answered</span>`;
-
-    const opts = q.options.map((opt, i) => `
-      <button class="option-btn" onclick="pick(${i})" id="opt${i}">
-        <span class="option-label">${LABELS[i]}</span>${esc(opt)}
-      </button>`).join('');
 
     document.getElementById('questionArea').innerHTML = `
       <div class="question-card">
         <div class="question-category">${esc(q.category)}</div>
         <div class="question-text">${esc(q.question)}</div>
       </div>
-      <div class="options-grid">${opts}</div>`;
+      <div class="answer-area">
+        <input
+          class="answer-input"
+          id="answerInput"
+          type="text"
+          placeholder="Type your answer…"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+        <button class="submit-btn" id="submitBtn" onclick="submitAnswer()">SUBMIT</button>
+      </div>`;
+
+    // Focus input & allow Enter to submit
+    setTimeout(() => {
+      const inp = document.getElementById('answerInput');
+      if (inp) {
+        inp.focus();
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(); });
+      }
+    }, 50);
   }
 
   // ── ANSWER ──
-  function pick(idx) {
+  function submitAnswer() {
     if (answered) return;
-    answered = true;
-    const ok = idx === correctIdx;
+    const inp = document.getElementById('answerInput');
+    const val = inp.value.trim();
+    if (!val) return;
 
-    for (let i = 0; i < 4; i++) {
-      const btn = document.getElementById(`opt${i}`);
-      btn.disabled = true;
-      if (i === correctIdx)      btn.classList.add('correct');
-      else if (i === idx && !ok) btn.classList.add('wrong');
-    }
+    answered = true;
+    inp.disabled = true;
+    document.getElementById('submitBtn').disabled = true;
+
+    const ok = fuzzyMatch(val, correctText);
+
+    inp.classList.add(ok ? 'correct' : 'wrong');
 
     const fb = document.getElementById('feedbackBar');
     fb.className = `feedback-bar show ${ok ? 'correct-fb' : 'wrong-fb'}`;
@@ -499,6 +513,37 @@ margin-bottom: 32px;
       : `<strong>Wrong!</strong> The correct answer was: <em>${esc(correctText)}</em>`;
 
     document.getElementById('nextBtn').className = 'next-btn show';
+  }
+
+  // ── FUZZY MATCH ──
+  // Accept if: exact match (case-insensitive), or edit distance ≤ 2 for answers >4 chars
+  function fuzzyMatch(input, correct) {
+    const a = input.toLowerCase().trim();
+    const b = correct.toLowerCase().trim();
+    if (a === b) return true;
+
+    // Also accept if the input matches after stripping "the ", "a ", "an "
+    const strip = s => s.replace(/^(the|a|an) /i, '').trim();
+    if (strip(a) === strip(b)) return true;
+
+    // Levenshtein distance
+    const dist = levenshtein(a, b);
+    const maxLen = Math.max(a.length, b.length);
+    // Allow 1 typo for answers up to 5 chars, 2 typos for longer
+    const tolerance = maxLen <= 5 ? 1 : 2;
+    return dist <= tolerance;
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({length: m+1}, (_, i) => [i, ...Array(n).fill(0)]);
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++)
+      for (let j = 1; j <= n; j++)
+        dp[i][j] = a[i-1] === b[j-1]
+          ? dp[i-1][j-1]
+          : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    return dp[m][n];
   }
 
   // ── DONE MODAL ──
