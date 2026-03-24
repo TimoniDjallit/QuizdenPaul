@@ -158,9 +158,7 @@ line-height: 1.45;
 }
 
 /* ── FREE TEXT INPUT ── */
-.answer-area {
-margin-bottom: 14px;
-}
+.answer-area { margin-bottom: 14px; }
 .answer-input {
 width: 100%;
 background: var(–surface);
@@ -174,10 +172,7 @@ outline: none;
 transition: border-color 0.2s, box-shadow 0.2s;
 margin-bottom: 10px;
 }
-.answer-input:focus {
-border-color: var(–accent);
-box-shadow: 0 0 0 3px rgba(240,192,64,0.1);
-}
+.answer-input:focus { border-color: var(–accent); box-shadow: 0 0 0 3px rgba(240,192,64,0.1); }
 .answer-input:disabled { opacity: 0.5; }
 .answer-input.correct { border-color: var(–correct); box-shadow: 0 0 0 3px rgba(62,207,142,0.1); }
 .answer-input.wrong   { border-color: var(–wrong);   box-shadow: 0 0 0 3px rgba(224,90,43,0.1); }
@@ -195,10 +190,7 @@ border-radius: var(–radius);
 cursor: pointer;
 transition: border-color 0.2s, background 0.2s;
 }
-.submit-btn:hover:not(:disabled) {
-border-color: var(–accent);
-background: rgba(240,192,64,0.07);
-}
+.submit-btn:hover:not(:disabled) { border-color: var(–accent); background: rgba(240,192,64,0.07); }
 .submit-btn:disabled { opacity: 0.4; cursor: default; }
 
 .feedback-bar {
@@ -262,71 +254,18 @@ animation: bounce 1.2s infinite ease-in-out;
 40%         { transform:scale(1); opacity:1; }
 }
 .loading-text { color: var(–muted); font-size: 15px; }
-
-/* ── MODAL (done!) ── */
-.modal-overlay {
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.75);
-backdrop-filter: blur(6px);
-z-index: 100;
-display: none;
-align-items: center;
-justify-content: center;
-padding: 24px;
-}
-.modal-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
-.modal {
-background: var(–surface);
-border: 1px solid rgba(240,192,64,0.2);
-border-radius: 20px;
-padding: 44px 36px;
-max-width: 420px;
-width: 100%;
-text-align: center;
-}
-.modal-emoji { font-size: 56px; margin-bottom: 16px; display: block; }
-.modal-title {
-font-family: ‘Bebas Neue’, sans-serif;
-font-size: 48px;
-line-height: 1;
-background: linear-gradient(135deg, var(–accent), var(–accent2));
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-background-clip: text;
-margin-bottom: 16px;
-}
-.modal-body {
-font-size: 16px;
-color: var(–muted);
-line-height: 1.7;
-margin-bottom: 32px;
-}
-.modal-body strong { color: var(–text); }
 </style>
 
 </head>
 <body>
-
-<!-- DONE MODAL -->
-
-<div class="modal-overlay" id="doneModal">
-  <div class="modal">
-    <span class="modal-emoji">🏆</span>
-    <div class="modal-title">LEGENDARY</div>
-    <p class="modal-body" id="doneText"></p>
-    <button class="btn-primary" onclick="restartFromModal()">PLAY AGAIN</button>
-  </div>
-</div>
-
 <div class="container">
 
   <!-- START -->
 
   <div class="screen active" id="startScreen">
     <span class="start-logo">QUIZ<br>MASTER</span>
-    <p class="start-sub">General Knowledge · Unlimited</p>
-    <p class="start-desc">4000+ questions across history, science, geography, culture and more. No repeats — ever.</p>
+    <p class="start-sub">General Knowledge · Powered by Gemini</p>
+    <p class="start-desc">AI-generated questions on history, science, geography, culture and more — unique every round.</p>
     <button class="btn-primary" onclick="startQuiz()">LET'S GO</button>
   </div>
 
@@ -344,112 +283,93 @@ margin-bottom: 32px;
       <div class="feedback-icon" id="fbIcon"></div>
       <div class="feedback-text" id="fbText"></div>
     </div>
-    <button class="next-btn" id="nextBtn" onclick="next()">NEXT QUESTION →</button>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">NEXT QUESTION →</button>
   </div>
 
 </div>
 
 <script>
-  let seenIds = new Set(JSON.parse(localStorage.getItem('qm_seen') || '[]'));
+  const GEMINI_KEY = 'AIzaSyBbTVitW_umj4MfZAog61UbDz67fVqQAbA';
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
 
-  let pool     = [];
-  let poolIdx  = 0;
-  let qNum     = 0;
+  let qNum = 0;
   let answered = false;
   let correctText = '';
+  let pool = [];
+  let poolIdx = 0;
+  let usedQuestions = [];
 
-  // ── SCREENS ──
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
-  // ── START ──
   async function startQuiz() {
-    qNum = 0; answered = false; pool = []; poolIdx = 0;
+    qNum = 0; answered = false; pool = []; poolIdx = 0; usedQuestions = [];
     showScreen('quizScreen');
-    try {
-      await fetchPool();
-      renderNext();
-    } catch(e) {
-      showError(e.message);
+    await loadPool();
+    renderNext();
+  }
+
+  // ── FETCH 10 QUESTIONS FROM GEMINI ──
+  async function loadPool() {
+    showLoading('Generating questions…');
+
+    const avoidNote = usedQuestions.length > 0
+      ? `\n\nDo NOT repeat any of these questions:\n${usedQuestions.slice(-30).join('\n')}`
+      : '';
+
+    const prompt = `Generate 10 diverse general knowledge questions in English.
+Topics: history, science, geography, nature, sports, culture, music, film, technology, literature, art.
+Mix easy, medium and hard difficulty. Make them interesting and educational.${avoidNote}
+
+Respond ONLY with a valid JSON array, no markdown, no explanation:
+[
+  {
+    "category": "History",
+    "question": "Which Roman emperor built a wall across northern Britain?",
+    "answer": "Hadrian"
+  },
+  ...
+]
+
+Rules:
+- answers must be short (1-4 words max)
+- questions must be clear and unambiguous
+- vary the topics across all 10 questions`;
+
+    const res = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 1.0, maxOutputTokens: 2048 }
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `API error ${res.status}`);
     }
+
+    const data = await res.json();
+    const raw  = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/gi, '').trim();
+    const parsed = JSON.parse(clean);
+
+    pool = parsed;
+    parsed.forEach(q => usedQuestions.push(q.question));
+    poolIdx = 0;
   }
 
-  // ── FETCH a batch of 50, skipping already-seen ──
-  async function fetchPool() {
-    showLoading('Loading questions…');
-
-    // Try up to 3 times (OTDB sometimes returns duplicates or rate-limits)
-    let attempts = 0;
-    while (attempts < 3) {
-      attempts++;
-      let res, data;
-      try {
-        res  = await fetch('https://opentdb.com/api.php?amount=50&type=multiple');
-        data = await res.json();
-      } catch(e) {
-        if (attempts >= 3) throw new Error('Could not reach the question server. Check your internet connection.');
-        continue;
-      }
-
-      if (data.response_code === 5) {
-        // Rate limited — wait and retry
-        await sleep(1500);
-        continue;
-      }
-      if (data.response_code !== 0 || !data.results?.length) {
-        throw new Error('No questions available right now. Try again in a moment.');
-      }
-
-      const dec = s => new DOMParser().parseFromString(s, 'text/html').body.textContent;
-
-      // Filter out already-seen questions
-      const fresh = data.results.filter(q => !seenIds.has(q.question));
-
-      if (fresh.length === 0 && seenIds.size > 3900) {
-        // Seen basically everything — show done modal
-        showDoneModal();
-        throw new Error('ALL_DONE');
-      }
-
-      // If all 50 happened to be seen already, retry
-      if (fresh.length === 0) { continue; }
-
-      pool = fresh.map(q => {
-        seenIds.add(q.question);
-        return {
-          category: dec(q.category),
-          question: dec(q.question),
-          correct_answer_raw: dec(q.correct_answer),
-        };
-      });
-
-      // Persist seen IDs
-      saveSeen();
-      poolIdx = 0;
-      return; // success
-    }
-    throw new Error('Could not load questions after multiple attempts. Please try again.');
-  }
-
-  function saveSeen() {
-    try { localStorage.setItem('qm_seen', JSON.stringify([...seenIds])); } catch(e) {}
-  }
-
-  // ── RENDER NEXT QUESTION ──
-  async function next() {
+  // ── RENDER ──
+  async function nextQuestion() {
     answered = false;
     document.getElementById('feedbackBar').className = 'feedback-bar';
     document.getElementById('nextBtn').className = 'next-btn';
 
     if (poolIdx >= pool.length) {
-      try {
-        await fetchPool();
-      } catch(e) {
-        if (e.message !== 'ALL_DONE') showError(e.message);
-        return;
-      }
+      try { await loadPool(); } catch(e) { showError(e.message); return; }
     }
     renderNext();
   }
@@ -457,8 +377,7 @@ margin-bottom: 32px;
   function renderNext() {
     const q = pool[poolIdx++];
     qNum++;
-
-    correctText = q.correct_answer_raw;
+    correctText = q.answer;
 
     document.getElementById('qCounter').innerHTML = `${qNum}<span>questions answered</span>`;
 
@@ -480,7 +399,6 @@ margin-bottom: 32px;
         <button class="submit-btn" id="submitBtn" onclick="submitAnswer()">SUBMIT</button>
       </div>`;
 
-    // Focus input & allow Enter to submit
     setTimeout(() => {
       const inp = document.getElementById('answerInput');
       if (inp) {
@@ -490,7 +408,7 @@ margin-bottom: 32px;
     }, 50);
   }
 
-  // ── ANSWER ──
+  // ── SUBMIT ──
   function submitAnswer() {
     if (answered) return;
     const inp = document.getElementById('answerInput');
@@ -502,13 +420,12 @@ margin-bottom: 32px;
     document.getElementById('submitBtn').disabled = true;
 
     const ok = fuzzyMatch(val, correctText);
-
     inp.classList.add(ok ? 'correct' : 'wrong');
 
     const fb = document.getElementById('feedbackBar');
     fb.className = `feedback-bar show ${ok ? 'correct-fb' : 'wrong-fb'}`;
     document.getElementById('fbIcon').textContent = ok ? '✅' : '❌';
-    document.getElementById('fbText').innerHTML   = ok
+    document.getElementById('fbText').innerHTML = ok
       ? `<strong>Correct!</strong>`
       : `<strong>Wrong!</strong> The correct answer was: <em>${esc(correctText)}</em>`;
 
@@ -516,22 +433,15 @@ margin-bottom: 32px;
   }
 
   // ── FUZZY MATCH ──
-  // Accept if: exact match (case-insensitive), or edit distance ≤ 2 for answers >4 chars
   function fuzzyMatch(input, correct) {
     const a = input.toLowerCase().trim();
     const b = correct.toLowerCase().trim();
     if (a === b) return true;
-
-    // Also accept if the input matches after stripping "the ", "a ", "an "
     const strip = s => s.replace(/^(the|a|an) /i, '').trim();
     if (strip(a) === strip(b)) return true;
-
-    // Levenshtein distance
     const dist = levenshtein(a, b);
     const maxLen = Math.max(a.length, b.length);
-    // Allow 1 typo for answers up to 5 chars, 2 typos for longer
-    const tolerance = maxLen <= 5 ? 1 : 2;
-    return dist <= tolerance;
+    return dist <= (maxLen <= 5 ? 1 : 2);
   }
 
   function levenshtein(a, b) {
@@ -546,21 +456,6 @@ margin-bottom: 32px;
     return dp[m][n];
   }
 
-  // ── DONE MODAL ──
-  function showDoneModal() {
-    document.getElementById('doneText').innerHTML =
-      `You've answered <strong>${seenIds.size} questions</strong>.<br><br>Hit up <strong>Timon</strong> for more questions!`;
-    document.getElementById('doneModal').classList.add('show');
-  }
-
-  function restartFromModal() {
-    // Reset seen list so they can play again from scratch
-    seenIds = new Set();
-    saveSeen();
-    document.getElementById('doneModal').classList.remove('show');
-    startQuiz();
-  }
-
   // ── HELPERS ──
   function showLoading(msg) {
     document.getElementById('questionArea').innerHTML = `
@@ -570,7 +465,7 @@ margin-bottom: 32px;
           <div class="loader-dot"></div>
           <div class="loader-dot"></div>
         </div>
-        <p class="loading-text">${esc(msg)}</p>
+        <p class="loading-text">${msg}</p>
       </div>`;
   }
 
@@ -579,27 +474,13 @@ margin-bottom: 32px;
       <div class="loading-card">
         <p style="color:var(--wrong);font-size:20px;margin-bottom:12px">⚠</p>
         <p class="loading-text" style="margin-bottom:24px">${esc(msg)}</p>
-        <button class="btn-primary" onclick="startQuiz()">Try again</button>
+        <button class="btn-primary" onclick="nextQuestion()">Try again</button>
       </div>`;
   }
 
-  function shuffle(arr) {
-    for (let i = arr.length-1; i > 0; i--) {
-      const j = Math.floor(Math.random()*(i+1));
-      [arr[i],arr[j]] = [arr[j],arr[i]];
-    }
-    return arr;
-  }
-
   function esc(s) {
-    return String(s)
-      .replace(/&/g,'&amp;')
-      .replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
-
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 </script>
 
 </body>
