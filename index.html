@@ -1,1 +1,475 @@
+<!DOCTYPE html>
 
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Master</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--accent:#f0c040;--accent2:#e05a2b;--text:#f0ede8;--muted:#6b6880;--correct:#3ecf8e;--wrong:#e05a2b;--radius:12px;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(240,192,64,.06) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(224,90,43,.05) 0%,transparent 50%);pointer-events:none;z-index:0;}
+  .container{width:100%;max-width:640px;position:relative;z-index:1;}
+  .screen{display:none;animation:fadeIn .4s ease;}
+  .screen.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .start-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,15vw,120px);line-height:.9;letter-spacing:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;margin-bottom:10px;}
+  .start-sub{font-size:13px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-bottom:52px;}
+  .start-desc{font-size:16px;color:var(--muted);line-height:1.6;font-weight:300;margin-bottom:44px;}
+  .btn-primary{background:var(--accent);color:#0a0a0f;border:none;padding:18px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;border-radius:var(--radius);cursor:pointer;transition:transform .15s,box-shadow .15s;width:100%;text-align:center;display:block;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(240,192,64,.3);}
+  .quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:36px;}
+  .quiz-counter{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--accent);line-height:1;}
+  .quiz-counter span{font-size:16px;color:var(--muted);font-family:'DM Sans',sans-serif;display:block;margin-top:2px;}
+  .question-card{background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:32px;margin-bottom:16px;position:relative;overflow:hidden;}
+  .question-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+  .question-category{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;opacity:.7;}
+  .question-text{font-size:clamp(17px,2.6vw,22px);font-weight:500;line-height:1.45;}
+  .answer-input{width:100%;background:var(--surface);border:1px solid rgba(255,255,255,.1);color:var(--text);padding:18px 20px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;transition:border-color .2s,box-shadow .2s;margin-bottom:10px;display:block;}
+  .answer-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(240,192,64,.1);}
+  .answer-input:disabled{opacity:.5;}
+  .answer-input.correct{border-color:var(--correct);box-shadow:0 0 0 3px rgba(62,207,142,.1);}
+  .answer-input.wrong{border-color:var(--wrong);box-shadow:0 0 0 3px rgba(224,90,43,.1);}
+  .submit-btn{width:100%;background:var(--surface2);color:var(--text);border:1px solid rgba(255,255,255,.1);padding:16px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;border-radius:var(--radius);cursor:pointer;transition:border-color .2s,background .2s;}
+  .submit-btn:hover:not(:disabled){border-color:var(--accent);background:rgba(240,192,64,.07);}
+  .submit-btn:disabled{opacity:.4;cursor:default;}
+  .feedback-bar{background:var(--surface);border-radius:var(--radius);padding:16px 20px;margin-bottom:12px;display:none;align-items:flex-start;gap:12px;border-left:4px solid transparent;animation:slideUp .25s ease;}
+  .feedback-bar.show{display:flex;}
+  .feedback-bar.correct-fb{border-left-color:var(--correct);}
+  .feedback-bar.wrong-fb{border-left-color:var(--wrong);}
+  @keyframes slideUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+  .feedback-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+  .feedback-text{font-size:14px;color:var(--muted);line-height:1.5;}
+  .feedback-text strong{color:var(--text);display:block;margin-bottom:2px;}
+  .next-btn{width:100%;background:var(--accent);color:#0a0a0f;border:none;padding:17px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;border-radius:var(--radius);cursor:pointer;display:none;transition:transform .15s,box-shadow .15s;}
+  .next-btn.show{display:block;}
+  .next-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(240,192,64,.25);}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center;padding:24px;}
+  .modal-overlay.show{display:flex;animation:fadeIn .3s ease;}
+  .modal{background:var(--surface);border:1px solid rgba(240,192,64,.2);border-radius:20px;padding:44px 36px;max-width:420px;width:100%;text-align:center;}
+  .modal-emoji{font-size:56px;margin-bottom:16px;display:block;}
+  .modal-title{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;}
+  .modal-body{font-size:16px;color:var(--muted);line-height:1.7;margin-bottom:32px;}
+  .modal-body strong{color:var(--text);}
+
+.btn-secondary{background:transparent;color:var(–muted);border:1px solid var(–surface2);padding:14px;font-family:‘DM Sans’,sans-serif;font-size:14px;border-radius:var(–radius);cursor:pointer;transition:color .2s,border-color .2s;width:100%;text-align:center;display:block;margin-top:10px;}
+.btn-secondary:hover{color:var(–text);border-color:var(–muted);}
+.stats-title{font-family:‘Bebas Neue’,sans-serif;font-size:56px;line-height:.9;background:linear-gradient(135deg,var(–accent),var(–accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+.stats-sub{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(–muted);margin-bottom:36px;}
+.total-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
+.stat-box{background:var(–surface);border:1px solid rgba(255,255,255,.06);border-radius:var(–radius);padding:22px 12px;text-align:center;}
+.stat-val{font-family:‘Bebas Neue’,sans-serif;font-size:38px;line-height:1;margin-bottom:4px;}
+.stat-val.green{color:var(–correct);}
+.stat-val.red{color:var(–wrong);}
+.stat-val.gold{color:var(–accent);}
+.stat-lbl{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(–muted);}
+.cat-section{margin-bottom:28px;}
+.cat-header{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(–accent);margin-bottom:12px;opacity:.8;}
+.cat-row{background:var(–surface);border:1px solid rgba(255,255,255,.06);border-radius:var(–radius);padding:16px 20px;margin-bottom:8px;}
+.cat-row-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.cat-name{font-size:15px;font-weight:500;}
+.cat-pct{font-family:‘Bebas Neue’,sans-serif;font-size:22px;color:var(–accent);}
+.progress-bar{height:4px;background:var(–surface2);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:99px;transition:width .4s ease;}
+.cat-detail{font-size:12px;color:var(–muted);margin-top:6px;}
+</style>
+
+</head>
+<body>
+<div class="modal-overlay" id="doneModal">
+  <div class="modal">
+    <span class="modal-emoji">🏆</span>
+    <div class="modal-title">LEGENDARY</div>
+    <p class="modal-body" id="doneText"></p>
+    <button class="btn-primary" onclick="restartFromModal()">NOCHMAL SPIELEN</button>
+  </div>
+</div>
+<div class="container">
+  <div class="screen active" id="startScreen">
+    <p style="font-size:15px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;">Willkommen zu</p><span class="start-logo">PAUL<br>WEIß<br>NICHTS</span>
+    <p class="start-sub">Allgemeinwissen · 200 Fragen</p>
+    <p class="start-desc">Geschichte, Wissenschaft, Geografie, Musik, Kultur & Kunst und Technologie.</p>
+    <button class="btn-primary" onclick="startQuiz()">LOS GEHT'S</button>
+    <button class="btn-secondary" onclick="openStats()">📊 Statistiken</button>
+  </div>
+  <div class="screen" id="quizScreen">
+    <div class="quiz-header">
+      <div class="quiz-counter" id="qCounter">1<span>beantwortet</span></div>
+    </div>
+    <div id="questionArea"></div>
+    <div class="feedback-bar" id="feedbackBar">
+      <div class="feedback-icon" id="fbIcon"></div>
+      <div class="feedback-text" id="fbText"></div>
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="renderNext()">NÄCHSTE FRAGE →</button>
+  </div>
+
+  <div class="screen" id="statsScreen">
+    <div class="stats-title">STATS</div>
+    <p class="stats-sub">Deine Gesamtstatistik</p>
+    <div class="total-row">
+      <div class="stat-box"><div class="stat-val gold" id="st-total">0</div><div class="stat-lbl">Gesamt</div></div>
+      <div class="stat-box"><div class="stat-val green" id="st-right">0</div><div class="stat-lbl">Richtig</div></div>
+      <div class="stat-box"><div class="stat-val red" id="st-wrong">0</div><div class="stat-lbl">Falsch</div></div>
+    </div>
+    <div class="total-row" style="margin-bottom:32px;">
+      <div class="stat-box"><div class="stat-val gold" id="st-pct">0%</div><div class="stat-lbl">Quote</div></div>
+      <div class="stat-box"><div class="stat-val green" id="st-rpct">0%</div><div class="stat-lbl">Richtig %</div></div>
+      <div class="stat-box"><div class="stat-val red" id="st-wpct">0%</div><div class="stat-lbl">Falsch %</div></div>
+    </div>
+    <div class="cat-section" id="catStats"></div>
+    <button class="btn-primary" onclick="startQuiz()">WEITERSPIELEN</button>
+    <button class="btn-secondary" onclick="showScreen('startScreen')">Zurück zum Menü</button>
+  </div>
+</div>
+<script>
+const Q = [
+  // ── GESCHICHTE (34) ──
+  {c:"Geschichte",q:"In welchem Jahr wurde der Westfälische Frieden unterzeichnet, der den Dreißigjährigen Krieg beendete?",a:"1648"},
+  {c:"Geschichte",q:"Wie hieß der Attentäter, der Erzherzog Franz Ferdinand 1914 erschoss?",a:"Gavrilo Princip"},
+  {c:"Geschichte",q:"In welchem Jahr wurde die Magna Carta unterzeichnet?",a:"1215"},
+  {c:"Geschichte",q:"Welcher byzantinische Kaiser ließ die Hagia Sophia erbauen?",a:"Justinian I"},
+  {c:"Geschichte",q:"In welchem Jahr eroberte Mehmed II. Konstantinopel?",a:"1453"},
+  {c:"Geschichte",q:"Wie hieß die Operation der alliierten Invasion in der Normandie 1944?",a:"Operation Overlord"},
+  {c:"Geschichte",q:"In welchem Jahr wurde das Heilige Römische Reich aufgelöst?",a:"1806"},
+  {c:"Geschichte",q:"Welcher Vertrag beendete den Ersten Weltkrieg offiziell?",a:"Versailler Vertrag"},
+  {c:"Geschichte",q:"In welchem Jahr fand die Bartholomäusnacht statt?",a:"1572"},
+  {c:"Geschichte",q:"Wie hieß der erste Kanzler des wiedervereinigten Deutschlands?",a:"Helmut Kohl"},
+  {c:"Geschichte",q:"In welchem Jahr wurde die Bundesrepublik Deutschland Mitglied der NATO?",a:"1955"},
+  {c:"Geschichte",q:"Welcher römische Kaiser ließ das Kolosseum erbauen?",a:"Vespasian"},
+  {c:"Geschichte",q:"In welchem Jahr fand die Oktoberrevolution in Russland statt?",a:"1917"},
+  {c:"Geschichte",q:"Wie hieß der Anführer der Bolschewiki während der Revolution?",a:"Lenin"},
+  {c:"Geschichte",q:"In welchem Jahr wurde die DDR gegründet?",a:"1949"},
+  {c:"Geschichte",q:"Welche Konferenz 1945 teilte Europa in Einflusszonen auf?",a:"Jalta-Konferenz"},
+  {c:"Geschichte",q:"In welchem Jahr wurde Nelson Mandela aus dem Gefängnis entlassen?",a:"1990"},
+  {c:"Geschichte",q:"Wie hieß der Plan der USA zum Wiederaufbau Europas nach dem Zweiten Weltkrieg?",a:"Marshallplan"},
+  {c:"Geschichte",q:"In welchem Jahr wurde die Chinesische Mauer größtenteils unter der Ming-Dynastie fertiggestellt?",a:"1644"},
+  {c:"Geschichte",q:"Welcher preußische König gilt als Begründer des aufgeklärten Absolutismus in Deutschland?",a:"Friedrich der Große"},
+  {c:"Geschichte",q:"In welchem Jahr fand die Kubakrise statt?",a:"1962"},
+  {c:"Geschichte",q:"Wie hieß die erste deutsche Demokratie nach 1918?",a:"Weimarer Republik"},
+  {c:"Geschichte",q:"In welchem Jahr wurde die Berliner Mauer gebaut?",a:"1961"},
+  {c:"Geschichte",q:"Welcher Vertrag gründete die Europäische Union?",a:"Maastrichter Vertrag"},
+  {c:"Geschichte",q:"In welchem Jahr wurde Indien von Pakistan geteilt?",a:"1947"},
+  {c:"Geschichte",q:"Wie hieß der erste Präsident der Weimarer Republik?",a:"Friedrich Ebert"},
+  {c:"Geschichte",q:"In welchem Jahr begann die Französische Revolution?",a:"1789"},
+  {c:"Geschichte",q:"Welche Seeschlacht von 1571 stoppte die osmanische Expansion im Mittelmeer?",a:"Seeschlacht von Lepanto"},
+  {c:"Geschichte",q:"In welchem Jahr wurde das Deutsche Kaiserreich gegründet?",a:"1871"},
+  {c:"Geschichte",q:"Wie nannte man die Politik der Rassentrennung in Südafrika?",a:"Apartheid"},
+  {c:"Geschichte",q:"In welchem Jahr fand der Prager Frühling statt?",a:"1968"},
+  {c:"Geschichte",q:"Welcher deutsche Kaiser dankte 1918 ab?",a:"Wilhelm II"},
+  {c:"Geschichte",q:"In welchem Jahr wurde die Sowjetunion aufgelöst?",a:"1991"},
+  {c:"Geschichte",q:"Wie hieß die geheime Polizeiorganisation im Dritten Reich?",a:"Gestapo"},
+
+// ── WISSENSCHAFT & NATUR (34) ──
+{c:“Wissenschaft”,q:“Welches Organ produziert Insulin im menschlichen Körper?”,a:“Bauchspeicheldrüse”},
+{c:“Wissenschaft”,q:“Wie heißt das Protein, das roten Blutkörperchen ihre Farbe gibt?”,a:“Hämoglobin”},
+{c:“Wissenschaft”,q:“Welches Gesetz beschreibt den Zusammenhang zwischen Druck und Volumen eines Gases?”,a:“Boyle-Mariotte-Gesetz”},
+{c:“Wissenschaft”,q:“Wie viele Elektronen hat ein neutrales Kohlenstoffatom?”,a:“6”},
+{c:“Wissenschaft”,q:“Welches Element hat die höchste Elektronegativität?”,a:“Fluor”},
+{c:“Wissenschaft”,q:“Wie heißt die Theorie, die beschreibt, wie sich Kontinente bewegen?”,a:“Plattentektonik”},
+{c:“Wissenschaft”,q:“Welches ist das dichteste natürlich vorkommende Element?”,a:“Osmium”},
+{c:“Wissenschaft”,q:“Wie heißt die Einheit der elektrischen Spannung?”,a:“Volt”},
+{c:“Wissenschaft”,q:“Welches Tier hat das größte Gehirn im Verhältnis zur Körpergröße?”,a:“Ameise”},
+{c:“Wissenschaft”,q:“Was ist der Unterschied zwischen einer Arterie und einer Vene?”,a:“Arterien vom Herz, Venen zum Herz”},
+{c:“Wissenschaft”,q:“Welches chemische Element hat die Ordnungszahl 79?”,a:“Gold”},
+{c:“Wissenschaft”,q:“Wie heißt der Prozess bei dem Pflanzen Wasser durch ihre Blätter abgeben?”,a:“Transpiration”},
+{c:“Wissenschaft”,q:“Welches ist das leichteste Metall?”,a:“Lithium”},
+{c:“Wissenschaft”,q:“Wie heißt die Einheit des elektrischen Widerstands?”,a:“Ohm”},
+{c:“Wissenschaft”,q:“Welches Tier hat das komplexeste Nervensystem unter Wirbellosen?”,a:“Oktopus”},
+{c:“Wissenschaft”,q:“Was ist der pH-Wert von reiner Salzsäure?”,a:“0”},
+{c:“Wissenschaft”,q:“Wie heißt die Wissenschaft von den Pilzen?”,a:“Mykologie”},
+{c:“Wissenschaft”,q:“Welches Gas entsteht bei der Verbrennung von Kohlenwasserstoffen?”,a:“Kohlendioxid”},
+{c:“Wissenschaft”,q:“Wie heißt der Hauptbestandteil von Erdgas?”,a:“Methan”},
+{c:“Wissenschaft”,q:“Welcher Wissenschaftler entdeckte die Radioaktivität?”,a:“Marie Curie”},
+{c:“Wissenschaft”,q:“Wie heißt die Einheit der Strahlungsenergie?”,a:“Joule”},
+{c:“Wissenschaft”,q:“Welches Tier hat das größte Gehirn aller Landtiere?”,a:“Elefant”},
+{c:“Wissenschaft”,q:“Was ist die Formel für die Berechnung von Geschwindigkeit?”,a:“Weg durch Zeit”},
+{c:“Wissenschaft”,q:“Wie heißt die Hülle um die Erde, die UV-Strahlung filtert?”,a:“Ozonschicht”},
+{c:“Wissenschaft”,q:“Welches Element leuchtet bei Berührung mit Wasser?”,a:“Natrium”},
+{c:“Wissenschaft”,q:“Wie heißt der Vorgang bei dem ein Feststoff direkt zu Gas wird?”,a:“Sublimation”},
+{c:“Wissenschaft”,q:“Welches Tier hat die längste Tragezeit unter Säugetieren?”,a:“Elefant”},
+{c:“Wissenschaft”,q:“Wie viele Herzkammern hat ein Krokodil?”,a:“4”},
+{c:“Wissenschaft”,q:“Welches Organ produziert die Gallenflüssigkeit?”,a:“Leber”},
+{c:“Wissenschaft”,q:“Was ist Biolumineszenz?”,a:“Lichterzeugung durch Lebewesen”},
+{c:“Wissenschaft”,q:“Welches ist das häufigste Element in der Erdkruste?”,a:“Sauerstoff”},
+{c:“Wissenschaft”,q:“Wie heißt die Wissenschaft der Erdbeben?”,a:“Seismologie”},
+{c:“Wissenschaft”,q:“Welches Metall ist bei Raumtemperatur flüssig?”,a:“Quecksilber”},
+{c:“Wissenschaft”,q:“Was ist der Unterschied zwischen einem Virus und einem Bakterium?”,a:“Viren brauchen Wirtszellen”},
+
+// ── GEOGRAFIE (34) ──
+{c:“Geografie”,q:“Welches Land hat die meisten Zeitzonen?”,a:“Frankreich”},
+{c:“Geografie”,q:“Wie heißt die Hauptstadt von Kasachstan?”,a:“Astana”},
+{c:“Geografie”,q:“Welches ist der salzhaltigste See der Welt?”,a:“Don Juan Pond”},
+{c:“Geografie”,q:“Wie heißt die Meerenge zwischen dem Schwarzen Meer und dem Mittelmeer?”,a:“Bosporus”},
+{c:“Geografie”,q:“Welches Land hat die längste Küstenlinie der Welt?”,a:“Kanada”},
+{c:“Geografie”,q:“Wie heißt die Hauptstadt von Myanmar?”,a:“Naypyidaw”},
+{c:“Geografie”,q:“In welchem Land liegt der Titicacasee?”,a:“Peru”},
+{c:“Geografie”,q:“Wie heißt das Gebirge das Indien vom Rest Asiens trennt?”,a:“Himalaya”},
+{c:“Geografie”,q:“Welches ist das bevölkerungsreichste Land Südamerikas?”,a:“Brasilien”},
+{c:“Geografie”,q:“Wie heißt der tiefste Punkt Afrikas?”,a:“Assalsee”},
+{c:“Geografie”,q:“In welchem Land liegt das Okavango-Delta?”,a:“Botswana”},
+{c:“Geografie”,q:“Wie heißt die Hauptstadt von Äthiopien?”,a:“Addis Abeba”},
+{c:“Geografie”,q:“Welches Land liegt zwischen Frankreich und Spanien in den Pyrenäen?”,a:“Andorra”},
+{c:“Geografie”,q:“Wie heißt der längste Fluss Südamerikas?”,a:“Amazonas”},
+{c:“Geografie”,q:“In welchem Land liegt der Kilimandscharo?”,a:“Tansania”},
+{c:“Geografie”,q:“Wie heißt die Hauptstadt von Neuseeland?”,a:“Wellington”},
+{c:“Geografie”,q:“Welches ist das flächengrößte Land Afrikas?”,a:“Algerien”},
+{c:“Geografie”,q:“Wie heißt der aktive Vulkan auf den Kanarischen Inseln?”,a:“Teide”},
+{c:“Geografie”,q:“In welchem Land liegt Machu Picchu?”,a:“Peru”},
+{c:“Geografie”,q:“Wie heißt die Hauptstadt von Pakistan?”,a:“Islamabad”},
+{c:“Geografie”,q:“Welches Meer liegt zwischen Italien und dem Balkan?”,a:“Adriatisches Meer”},
+{c:“Geografie”,q:“Wie heißt die Wüste im Süden der Mongolei?”,a:“Gobi”},
+{c:“Geografie”,q:“In welchem Land liegt der Baikalsee?”,a:“Russland”},
+{c:“Geografie”,q:“Wie heißt das Gebirge das Skandinavien durchzieht?”,a:“Skandinavisches Gebirge”},
+{c:“Geografie”,q:“Welches Land hat den höchsten Pro-Kopf-CO2-Ausstoß weltweit?”,a:“Katar”},
+{c:“Geografie”,q:“Wie heißt die Hauptstadt von Algerien?”,a:“Algier”},
+{c:“Geografie”,q:“In welchem Land liegen die Victoriafälle?”,a:“Simbabwe”},
+{c:“Geografie”,q:“Wie heißt das Meer zwischen Grönland und Norwegen?”,a:“Grönländisches Meer”},
+{c:“Geografie”,q:“Welches Land hat den Amazonas als Nationalfluss?”,a:“Brasilien”},
+{c:“Geografie”,q:“Wie heißt die Hauptstadt von Irak?”,a:“Bagdad”},
+{c:“Geografie”,q:“In welchem Land liegt das Tote Meer?”,a:“Israel”},
+{c:“Geografie”,q:“Wie heißt das Gebirge das Russland von Georgien trennt?”,a:“Kaukasus”},
+{c:“Geografie”,q:“Welches Land hat die größten Lithiumvorkommen der Welt?”,a:“Chile”},
+{c:“Geografie”,q:“Wie heißt der Vulkan der 1815 die größte Eruption der Neuzeit hatte?”,a:“Tambora”},
+
+// ── MUSIK (34) ──
+{c:“Musik”,q:“In welchem Jahr erschien das Album Sgt. Pepper’s Lonely Hearts Club Band der Beatles?”,a:“1967”},
+{c:“Musik”,q:“Wer komponierte das Werk Also sprach Zarathustra?”,a:“Richard Strauss”},
+{c:“Musik”,q:“Wie heißt der Sänger von Radiohead?”,a:“Thom Yorke”},
+{c:“Musik”,q:“In welchem Jahr starb Mozart?”,a:“1791”},
+{c:“Musik”,q:“Welcher Komponist schrieb das Wohltemperierte Klavier?”,a:“Bach”},
+{c:“Musik”,q:“Wie heißt die Oper in der die Arie O mio babbino caro vorkommt?”,a:“Gianni Schicchi”},
+{c:“Musik”,q:“In welchem Jahr erschien Nirvanas Album Nevermind?”,a:“1991”},
+{c:“Musik”,q:“Welcher Komponist schrieb die Oper Tristan und Isolde?”,a:“Wagner”},
+{c:“Musik”,q:“Wie heißt das bekannteste Werk von Édith Piaf?”,a:“La Vie en Rose”},
+{c:“Musik”,q:“In welchem Jahr starb Elvis Presley?”,a:“1977”},
+{c:“Musik”,q:“Welcher Komponist schrieb Carmina Burana?”,a:“Carl Orff”},
+{c:“Musik”,q:“Wie heißt der Gitarrist von Metallica?”,a:“Kirk Hammett”},
+{c:“Musik”,q:“In welchem Jahr erschien Thriller von Michael Jackson?”,a:“1982”},
+{c:“Musik”,q:“Welcher Komponist war für den Bolero bekannt?”,a:“Ravel”},
+{c:“Musik”,q:“Wie heißt das erste Album von Led Zeppelin?”,a:“Led Zeppelin I”},
+{c:“Musik”,q:“In welchem Jahr wurde Beethoven geboren?”,a:“1770”},
+{c:“Musik”,q:“Welcher Komponist schrieb die Oper La Traviata?”,a:“Verdi”},
+{c:“Musik”,q:“Wie heißt der Bassist der Rolling Stones?”,a:“Bill Wyman”},
+{c:“Musik”,q:“In welchem Jahr lösten sich die Beatles auf?”,a:“1970”},
+{c:“Musik”,q:“Welcher Komponist schrieb Madama Butterfly?”,a:“Puccini”},
+{c:“Musik”,q:“Wie heißt der Schlagzeuger von Queen?”,a:“Roger Taylor”},
+{c:“Musik”,q:“In welchem Jahr starb Freddie Mercury?”,a:“1991”},
+{c:“Musik”,q:“Welcher Komponist schrieb die Oper Don Giovanni?”,a:“Mozart”},
+{c:“Musik”,q:“Wie heißt das Debütalbum von Pink Floyd?”,a:“The Piper at the Gates of Dawn”},
+{c:“Musik”,q:“In welchem Jahr wurde die Berliner Philharmoniker gegründet?”,a:“1882”},
+{c:“Musik”,q:“Welcher Komponist schrieb die Winterreise?”,a:“Schubert”},
+{c:“Musik”,q:“Wie heißt der Sänger von den Doors?”,a:“Jim Morrison”},
+{c:“Musik”,q:“In welchem Jahr erschien Dark Side of the Moon?”,a:“1973”},
+{c:“Musik”,q:“Welcher Komponist schrieb Peer Gynt?”,a:“Grieg”},
+{c:“Musik”,q:“Wie heißt der Gitarrist von AC/DC der 1980 starb?”,a:“Bon Scott”},
+{c:“Musik”,q:“In welchem Jahr wurde Bob Dylan mit dem Nobelpreis ausgezeichnet?”,a:“2016”},
+{c:“Musik”,q:“Welcher Komponist schrieb die Oper Parsifal?”,a:“Wagner”},
+{c:“Musik”,q:“Wie heißt das bekannteste Werk von Johann Strauss Sohn?”,a:“An der schönen blauen Donau”},
+{c:“Musik”,q:“In welchem Jahr starb David Bowie?”,a:“2016”},
+
+// ── KULTUR & KUNST (32) ──
+{c:“Kultur”,q:“In welchem Jahr wurde die Sixtinische Kapelle von Michelangelo fertiggestellt?”,a:“1512”},
+{c:“Kultur”,q:“Wie heißt das Gemälde von Jan Vermeer mit dem Mädchen mit dem Perlenohrring?”,a:“Das Mädchen mit dem Perlenohrring”},
+{c:“Kultur”,q:“Wer schrieb Schuld und Sühne?”,a:“Dostojewski”},
+{c:“Kultur”,q:“In welchem Jahr erschien Kafkas Die Verwandlung?”,a:“1915”},
+{c:“Kultur”,q:“Welcher Maler gehört zum Surrealismus und schuf Die Beständigkeit der Erinnerung?”,a:“Dalí”},
+{c:“Kultur”,q:“Wer schrieb Ulysses?”,a:“James Joyce”},
+{c:“Kultur”,q:“In welchem Jahr wurde das Bauhaus in Weimar gegründet?”,a:“1919”},
+{c:“Kultur”,q:“Welcher Maler gehört zum Pointillismus?”,a:“Seurat”},
+{c:“Kultur”,q:“Wer schrieb Auf der Suche nach der verlorenen Zeit?”,a:“Proust”},
+{c:“Kultur”,q:“In welchem Jahr wurde das Guggenheim Museum in New York eröffnet?”,a:“1959”},
+{c:“Kultur”,q:“Welcher Architekt entwarf die Sagrada Família?”,a:“Gaudí”},
+{c:“Kultur”,q:“Wer schrieb Hundert Jahre Einsamkeit?”,a:“García Márquez”},
+{c:“Kultur”,q:“In welchem Jahr erschien Orwells 1984?”,a:“1949”},
+{c:“Kultur”,q:“Welcher Maler gehört zum Fauvismus und ist für starke Farben bekannt?”,a:“Matisse”},
+{c:“Kultur”,q:“Wer schrieb Die Brüder Karamasow?”,a:“Dostojewski”},
+{c:“Kultur”,q:“In welchem Jahr wurde der Louvre als Museum eröffnet?”,a:“1793”},
+{c:“Kultur”,q:“Welcher deutsche Dichter schrieb die Duineser Elegien?”,a:“Rilke”},
+{c:“Kultur”,q:“Wer schrieb Madame Bovary?”,a:“Flaubert”},
+{c:“Kultur”,q:“In welchem Jahr wurde der Eiffelturm fertiggestellt?”,a:“1889”},
+{c:“Kultur”,q:“Welcher Maler gilt als Begründer des Kubismus zusammen mit Picasso?”,a:“Braque”},
+{c:“Kultur”,q:“Wer schrieb Im Westen nichts Neues?”,a:“Remarque”},
+{c:“Kultur”,q:“In welchem Jahr erschien Goethes Faust Teil I?”,a:“1808”},
+{c:“Kultur”,q:“Welcher Maler schuf das Werk Olympia das einen Skandal verursachte?”,a:“Manet”},
+{c:“Kultur”,q:“Wer schrieb Die Blechtrommel?”,a:“Günter Grass”},
+{c:“Kultur”,q:“In welchem Jahr wurde die Akropolis in Athen erbaut?”,a:“447 v Chr”},
+{c:“Kultur”,q:“Welcher Bildhauer schuf die Pietà im Petersdom?”,a:“Michelangelo”},
+{c:“Kultur”,q:“Wer schrieb Der Steppenwolf?”,a:“Hermann Hesse”},
+{c:“Kultur”,q:“In welchem Jahr entstand das Gemälde Die Erschaffung Adams?”,a:“1512”},
+{c:“Kultur”,q:“Welcher Maler gilt als Begründer des Impressionismus?”,a:“Monet”},
+{c:“Kultur”,q:“Wer schrieb Effi Briest?”,a:“Fontane”},
+{c:“Kultur”,q:“In welchem Jahr wurde der Petersdom in Rom geweiht?”,a:“1626”},
+{c:“Kultur”,q:“Welcher Künstler schuf die Installation The Physical Impossibility of Death?”,a:“Damien Hirst”},
+
+// ── TECHNOLOGIE (32) ──
+{c:“Technologie”,q:“In welchem Jahr wurde das erste iPhone vorgestellt?”,a:“2007”},
+{c:“Technologie”,q:“Wie heißt das Betriebssystem das auf dem Linux-Kernel basiert und für Android verwendet wird?”,a:“Android”},
+{c:“Technologie”,q:“In welchem Jahr wurde Wikipedia gegründet?”,a:“2001”},
+{c:“Technologie”,q:“Wie heißt der Algorithmus, den Google zur Bewertung von Webseiten entwickelte?”,a:“PageRank”},
+{c:“Technologie”,q:“In welchem Jahr wurde der erste Satellit Sputnik gestartet?”,a:“1957”},
+{c:“Technologie”,q:“Wie heißt die Programmiersprache die von Guido van Rossum entwickelt wurde?”,a:“Python”},
+{c:“Technologie”,q:“In welchem Jahr wurde das erste kommerzielle Mobiltelefon verkauft?”,a:“1983”},
+{c:“Technologie”,q:“Wie heißt das Verschlüsselungsprotokoll das HTTPS sichert?”,a:“TLS”},
+{c:“Technologie”,q:“In welchem Jahr wurde der erste Personal Computer von IBM eingeführt?”,a:“1981”},
+{c:“Technologie”,q:“Wie heißt die Datenstruktur bei der zuletzt eingefügte Elemente zuerst entfernt werden?”,a:“Stack”},
+{c:“Technologie”,q:“In welchem Jahr wurde das Betriebssystem Linux von Linus Torvalds veröffentlicht?”,a:“1991”},
+{c:“Technologie”,q:“Wie heißt die Technologie hinter Bitcoin?”,a:“Blockchain”},
+{c:“Technologie”,q:“In welchem Jahr wurde der erste Transistor erfunden?”,a:“1947”},
+{c:“Technologie”,q:“Wie heißt das Protokoll das E-Mails sendet?”,a:“SMTP”},
+{c:“Technologie”,q:“In welchem Jahr wurde das erste Mal eine Webseite im World Wide Web veröffentlicht?”,a:“1991”},
+{c:“Technologie”,q:“Wie heißt die Methode zur Schätzung der Komplexität von Algorithmen?”,a:“Big-O-Notation”},
+{c:“Technologie”,q:“In welchem Jahr kaufte Microsoft LinkedIn?”,a:“2016”},
+{c:“Technologie”,q:“Wie heißt das Prinzip bei dem Code nicht ausgeführt wird bis er gebraucht wird?”,a:“Lazy Loading”},
+{c:“Technologie”,q:“In welchem Jahr wurde Java von Sun Microsystems veröffentlicht?”,a:“1995”},
+{c:“Technologie”,q:“Wie heißt der Erfinder des World Wide Web?”,a:“Tim Berners-Lee”},
+{c:“Technologie”,q:“In welchem Jahr gründeten Larry Page und Sergey Brin Google?”,a:“1998”},
+{c:“Technologie”,q:“Wie heißt das Konzept bei dem mehrere virtuelle Maschinen auf einem Server laufen?”,a:“Virtualisierung”},
+{c:“Technologie”,q:“In welchem Jahr wurde ChatGPT von OpenAI veröffentlicht?”,a:“2022”},
+{c:“Technologie”,q:“Wie heißt die Schnittstelle zwischen Hardware und Software?”,a:“Treiber”},
+{c:“Technologie”,q:“In welchem Jahr wurde das erste Touchscreen-Gerät kommerziell verkauft?”,a:“1993”},
+{c:“Technologie”,q:“Wie heißt das deutsche Unternehmen das SAP-Software entwickelt?”,a:“SAP”},
+{c:“Technologie”,q:“In welchem Jahr wurde Amazon gegründet?”,a:“1994”},
+{c:“Technologie”,q:“Wie heißt die Methode bei der Daten komprimiert gespeichert werden ohne Verlust?”,a:“Lossless Compression”},
+{c:“Technologie”,q:“In welchem Jahr wurde das erste E-Mail gesendet?”,a:“1971”},
+{c:“Technologie”,q:“Wie heißt der Erfinder des Telefons?”,a:“Alexander Graham Bell”},
+{c:“Technologie”,q:“In welchem Jahr wurde Apple gegründet?”,a:“1976”},
+{c:“Technologie”,q:“Wie heißt das Konzept bei dem Software als Dienst über das Internet angeboten wird?”,a:“SaaS”},
+];
+
+// ── STATE ──
+let seen=new Set(JSON.parse(localStorage.getItem(‘qz_seen’)||’[]’));
+let deck=[],deckIdx=0,qNum=0,answered=false,correctText=’’,currentCat=’’;
+
+// Stats stored as {total, right} per category + overall
+function loadStats(){try{return JSON.parse(localStorage.getItem(‘qz_stats’)||‘null’)||{total:0,right:0,cats:{}};}catch(e){return{total:0,right:0,cats:{}};}}
+function saveStats(s){try{localStorage.setItem(‘qz_stats’,JSON.stringify(s));}catch(e){}}
+
+function showScreen(id){document.querySelectorAll(’.screen’).forEach(s=>s.classList.remove(‘active’));document.getElementById(id).classList.add(‘active’);}
+
+function buildDeck(){
+let unseen=Q.map((*,i)=>i).filter(i=>!seen.has(i));
+if(unseen.length===0){seen=new Set();localStorage.removeItem(‘qz_seen’);unseen=Q.map((*,i)=>i);}
+deck=shuffle(unseen);deckIdx=0;
+}
+
+function startQuiz(){qNum=0;answered=false;buildDeck();showScreen(‘quizScreen’);renderNext();}
+
+function renderNext(){
+if(deckIdx>=deck.length){buildDeck();}
+answered=false;
+document.getElementById(‘feedbackBar’).className=‘feedback-bar’;
+document.getElementById(‘nextBtn’).className=‘next-btn’;
+
+const q=Q[deck[deckIdx++]];
+qNum++;correctText=q.a;currentCat=q.c;
+document.getElementById(‘qCounter’).innerHTML=`${qNum}<span>beantwortet</span>`;
+document.getElementById(‘questionArea’).innerHTML=` <div class="question-card"> <div class="question-category">${esc(q.c)}</div> <div class="question-text">${esc(q.q)}</div> </div> <input class="answer-input" id="answerInput" type="text" placeholder="Antwort eingeben…" autocomplete="off" autocorrect="off" spellcheck="false"/> <button class="submit-btn" id="submitBtn" onclick="submitAnswer()">ANTWORTEN</button>`;
+
+setTimeout(()=>{
+const inp=document.getElementById(‘answerInput’);
+if(inp){inp.focus();inp.addEventListener(‘keydown’,e=>{if(e.key===‘Enter’)submitAnswer();});}
+},50);
+}
+
+function submitAnswer(){
+if(answered)return;
+const inp=document.getElementById(‘answerInput’);
+const val=inp.value.trim();
+if(!val)return;
+answered=true;
+inp.disabled=true;
+document.getElementById(‘submitBtn’).disabled=true;
+
+seen.add(deck[deckIdx-1]);
+try{localStorage.setItem(‘qz_seen’,JSON.stringify([…seen]));}catch(e){}
+
+// Update stats
+const st=loadStats();
+st.total++;
+if(ok)st.right++;
+if(!st.cats[currentCat])st.cats[currentCat]={total:0,right:0};
+st.cats[currentCat].total++;
+if(ok)st.cats[currentCat].right++;
+saveStats(st);
+
+const ok=fuzzyMatch(val,correctText);
+inp.classList.add(ok?‘correct’:‘wrong’);
+const fb=document.getElementById(‘feedbackBar’);
+fb.className=`feedback-bar show ${ok?'correct-fb':'wrong-fb'}`;
+document.getElementById(‘fbIcon’).textContent=ok?‘✅’:‘❌’;
+document.getElementById(‘fbText’).innerHTML=ok
+?`<strong>Richtig!</strong>`
+:`<strong>Falsch!</strong> Die richtige Antwort war: <em>${esc(correctText)}</em>`;
+document.getElementById(‘nextBtn’).className=‘next-btn show’;
+}
+
+function showDoneModal(){
+document.getElementById(‘doneText’).innerHTML=`Du hast <strong>${seen.size} Fragen</strong> beantwortet.<br><br>Melde dich bei <strong>Timon</strong> für weitere Fragen!`;
+document.getElementById(‘doneModal’).classList.add(‘show’);
+}
+
+function restartFromModal(){
+seen=new Set();localStorage.removeItem(‘qz_seen’);
+document.getElementById(‘doneModal’).classList.remove(‘show’);
+startQuiz();
+}
+
+function openStats(){
+const st=loadStats();
+const total=st.total,right=st.right,wrong=total-right;
+const pct=total>0?Math.round(right/total*100):0;
+document.getElementById(‘st-total’).textContent=total;
+document.getElementById(‘st-right’).textContent=right;
+document.getElementById(‘st-wrong’).textContent=wrong;
+document.getElementById(‘st-pct’).textContent=pct+’%’;
+document.getElementById(‘st-rpct’).textContent=(total>0?Math.round(right/total*100):0)+’%’;
+document.getElementById(‘st-wpct’).textContent=(total>0?Math.round(wrong/total*100):0)+’%’;
+
+const cats=[‘Geschichte’,‘Wissenschaft’,‘Geografie’,‘Musik’,‘Kultur’,‘Technologie’];
+const catLabels={Geschichte:‘🏛 Geschichte’,Wissenschaft:‘🔬 Wissenschaft & Natur’,Geografie:‘🗺 Geografie’,Musik:‘🎵 Musik’,Kultur:‘🎨 Kultur & Kunst’,Technologie:‘💻 Technologie’};
+let out=’’;
+cats.forEach(function(cat){
+const d=st.cats[cat]||{total:0,right:0};
+const w=d.total-d.right;
+const p=d.total>0?Math.round(d.right/d.total*100):0;
+const fillColor=p>=70?‘var(–correct)’:p>=40?‘var(–accent)’:‘var(–wrong)’;
+out+=’<div class="cat-row">’
++’<div class="cat-row-top"><span class="cat-name">’+catLabels[cat]+’</span><span class="cat-pct">’+p+’%</span></div>’
++’<div class="progress-bar"><div class="progress-fill" style="width:'+p+'%;background:'+fillColor+'"></div></div>’
++’<div class="cat-detail">’+d.right+’ richtig · ‘+w+’ falsch · ‘+d.total+’ gesamt</div>’
++’</div>’;
+});
+document.getElementById(‘catStats’).innerHTML=out;
+showScreen(‘statsScreen’);
+}
+
+function fuzzyMatch(input,correct){
+const a=input.toLowerCase().trim();
+const b=correct.toLowerCase().trim();
+if(a===b)return true;
+// Jahreszahlen und reine Zahlen: exakter Match erforderlich
+if(/^\d+$/.test(b))return false;
+const strip=s=>s.replace(/^(der|die|das|the|ein|eine|a|an) /i,’’).trim();
+if(strip(a)===strip(b))return true;
+return levenshtein(a,b)<=(Math.max(a.length,b.length)<=5?1:2);
+}
+
+function levenshtein(a,b){
+const m=a.length,n=b.length;
+const dp=Array.from({length:m+1},(_,i)=>[i,…Array(n).fill(0)]);
+for(let j=0;j<=n;j++)dp[0][j]=j;
+for(let i=1;i<=m;i++)
+for(let j=1;j<=n;j++)
+dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+return dp[m][n];
+}
+
+function shuffle(arr){const a=[…arr];for(let i=a.length-1;i>0;i–){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function esc(s){return String(s).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’);}
+</script>
+
+</body>
+</html>
