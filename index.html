@@ -501,9 +501,17 @@ function fuzzyMatch(input, correct) {
   var a = input.toLowerCase().trim();
   var b = correct.toLowerCase().trim();
   if (a === b) return true;
+  // Reine Zahlen: exakter Match
   if (/^\d+$/.test(b)) return false;
   var strip = function(s) { return s.replace(/^(der|die|das|the|ein|eine|a|an) /i, '').trim(); };
   if (strip(a) === strip(b)) return true;
+  // Nachname reicht: wenn Antwort mehrere Woerter hat, letztes Wort vergleichen
+  var bParts = b.split(' ');
+  if (bParts.length > 1) {
+    var lastName = bParts[bParts.length - 1];
+    if (a === lastName) return true;
+    if (levenshtein(a, lastName) <= (lastName.length <= 5 ? 1 : 2)) return true;
+  }
   return levenshtein(a, b) <= (Math.max(a.length, b.length) <= 5 ? 1 : 2);
 }
 
