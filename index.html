@@ -367,8 +367,14 @@ document.getElementById(‘nextBtn’).className=‘next-btn’;
 
 const q=Q[deck[deckIdx++]];
 qNum++;correctText=q.a;currentCat=q.c;
-document.getElementById(‘qCounter’).innerHTML=`${qNum}<span>beantwortet</span>`;
-document.getElementById(‘questionArea’).innerHTML=` <div class="question-card"> <div class="question-category">${esc(q.c)}</div> <div class="question-text">${esc(q.q)}</div> </div> <input class="answer-input" id="answerInput" type="text" placeholder="Antwort eingeben…" autocomplete="off" autocorrect="off" spellcheck="false"/> <button class="submit-btn" id="submitBtn" onclick="submitAnswer()">ANTWORTEN</button>`;
+document.getElementById(‘qCounter’).innerHTML=qNum+’<span>beantwortet</span>’;
+document.getElementById(‘questionArea’).innerHTML=
+‘<div class="question-card">’
++’<div class="question-category">’+esc(q.c)+’</div>’
++’<div class="question-text">’+esc(q.q)+’</div>’
++’</div>’
++’<input class="answer-input" id="answerInput" type="text" placeholder="Antwort eingeben…" autocomplete="off" autocorrect="off" spellcheck="false"/>’
++’<button class="submit-btn" id="submitBtn" onclick="submitAnswer()">ANTWORTEN</button>’;
 
 setTimeout(()=>{
 const inp=document.getElementById(‘answerInput’);
@@ -400,16 +406,16 @@ if(ok)st.cats[currentCat].right++;
 saveStats(st);
 inp.classList.add(ok?‘correct’:‘wrong’);
 const fb=document.getElementById(‘feedbackBar’);
-fb.className=`feedback-bar show ${ok?'correct-fb':'wrong-fb'}`;
+fb.className=‘feedback-bar show ‘+(ok?‘correct-fb’:‘wrong-fb’);
 document.getElementById(‘fbIcon’).textContent=ok?‘✅’:‘❌’;
 document.getElementById(‘fbText’).innerHTML=ok
-?`<strong>Richtig!</strong>`
-:`<strong>Falsch!</strong> Die richtige Antwort war: <em>${esc(correctText)}</em>`;
+?’<strong>Richtig!</strong>’
+:’<strong>Falsch!</strong> Die richtige Antwort war: <em>’+esc(correctText)+’</em>’;
 document.getElementById(‘nextBtn’).className=‘next-btn show’;
 }
 
 function showDoneModal(){
-document.getElementById(‘doneText’).innerHTML=`Du hast <strong>${seen.size} Fragen</strong> beantwortet.<br><br>Melde dich bei <strong>Timon</strong> für weitere Fragen!`;
+document.getElementById(‘doneText’).innerHTML=‘Du hast <strong>’+seen.size+’ Fragen</strong> beantwortet.<br><br>Melde dich bei <strong>Timon</strong> für weitere Fragen!’;
 document.getElementById(‘doneModal’).classList.add(‘show’);
 }
 
