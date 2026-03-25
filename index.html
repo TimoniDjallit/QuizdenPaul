@@ -88,7 +88,8 @@
 </div>
 <div class="container">
   <div class="screen active" id="startScreen">
-    <p style="font-size:15px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;">Willkommen zu</p><span class="start-logo">PAUL<br>WEIß<br>NICHTS</span>
+    <p style="font-size:15px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;">Willkommen zu</p>
+    <div class="start-logo">PAUL<br>WEIß<br>NICHTS</div>
     <p class="start-sub">Allgemeinwissen · 200 Fragen</p>
     <p class="start-desc">Geschichte, Wissenschaft, Geografie, Musik, Kultur & Kunst und Technologie.</p>
     <button class="btn-primary" onclick="startQuiz()">LOS GEHT'S</button>
@@ -104,6 +105,7 @@
       <div class="feedback-text" id="fbText"></div>
     </div>
     <button class="next-btn" id="nextBtn" onclick="renderNext()">NÄCHSTE FRAGE →</button>
+    <button class="btn-secondary" style="margin-top:10px;" onclick="showScreen('startScreen')">← Hauptmenü</button>
   </div>
 
   <div class="screen" id="statsScreen">
@@ -386,6 +388,8 @@ document.getElementById(‘submitBtn’).disabled=true;
 seen.add(deck[deckIdx-1]);
 try{localStorage.setItem(‘qz_seen’,JSON.stringify([…seen]));}catch(e){}
 
+const ok=fuzzyMatch(val,correctText);
+
 // Update stats
 const st=loadStats();
 st.total++;
@@ -394,8 +398,6 @@ if(!st.cats[currentCat])st.cats[currentCat]={total:0,right:0};
 st.cats[currentCat].total++;
 if(ok)st.cats[currentCat].right++;
 saveStats(st);
-
-const ok=fuzzyMatch(val,correctText);
 inp.classList.add(ok?‘correct’:‘wrong’);
 const fb=document.getElementById(‘feedbackBar’);
 fb.className=`feedback-bar show ${ok?'correct-fb':'wrong-fb'}`;
