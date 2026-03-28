@@ -278,6 +278,7 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
       <div class="role-select-sub" id="paulBoxSub">Runde starten oder beitreten</div>
     </div>
     <button class="btn-secondary" onclick="openVsStats()">&#128200; VS Statistiken</button>
+    <button class="btn-secondary" onclick="resetIdentity()" style="color:var(--wrong);border-color:rgba(224,90,43,.3);">Identitaet wechseln</button>
     <button class="btn-secondary" onclick="showScreen('startScreen')">&#8592; Hauptmenue</button>
   </div>
 
@@ -308,6 +309,7 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
       <div class="feedback-text" id="vsFbText"></div>
     </div>
     <button class="next-btn" id="vsNextBtn" onclick="vsNext()">NAECHSTE FRAGE &#8594;</button>
+    <button class="btn-secondary" onclick="showScreen('startScreen')">&#8592; Hauptmenue</button>
   </div>
 
   <!-- VS RESULT SCREEN -->
@@ -942,9 +944,20 @@ function acceptChallenge() {
   });
 }
 
+function resetIdentity() {
+  myIdentity = '';
+  localStorage.removeItem('qz_identity');
+  showScreen('vsIdentityScreen');
+}
+
 function setIdentity(role) {
   myIdentity = role;
   localStorage.setItem('qz_identity', role);
+  // Reset onclick handlers before checking state
+  var timonBox = document.getElementById('timonBox');
+  var paulBox = document.getElementById('paulBox');
+  if (timonBox) timonBox.onclick = null;
+  if (paulBox) paulBox.onclick = null;
   showScreen('vsStartScreen');
   checkVsStartState();
 }
@@ -959,57 +972,56 @@ function openVsMode() {
 }
 
 function checkVsStartState() {
-  sbFetch('rounds?p2_done=eq.false&order=created_at.desc&limit=1&select=id,p1_done,p1_score').then(function(data) {
-    var timonBox = document.getElementById('timonBox');
-    var paulBox = document.getElementById('paulBox');
-    var timonSub = document.getElementById('timonBoxSub');
-    var paulSub = document.getElementById('paulBoxSub');
+  if (!myIdentity) { showScreen('vsIdentityScreen'); return; }
+  var me = myIdentity;
+  var opponent = me === 'timon' ? 'paul' : 'timon';
+  var myBox = document.getElementById(me + 'Box');
+  var myBoxSub = document.getElementById(me + 'BoxSub');
+  var opBox = document.getElementById(opponent + 'Box');
+  var opBoxSub = document.getElementById(opponent + 'BoxSub');
 
-    var me = myIdentity;
-    var opponent = me === 'timon' ? 'paul' : 'timon';
-    var myBox = document.getElementById(me + 'Box');
-    var myBoxSub = document.getElementById(me + 'BoxSub');
-    var opBox = document.getElementById(opponent + 'Box');
-    var opBoxSub = document.getElementById(opponent + 'BoxSub');
+  // Opponent box always locked on this device
+  opBox.style.opacity = '0.3';
+  opBox.style.cursor = 'default';
+  opBox.onclick = null;
 
-    // Opponent box always locked on this device
-    opBox.style.opacity = '0.3'; opBox.style.cursor = 'default';
-
+  sbFetch('rounds?p2_done=eq.false&order=created_at.desc&limit=1&select=id,p1_done,starter').then(function(data) {
     if (!data || data.length === 0) {
-      // No active round - I can start
       myBox.style.opacity = '1'; myBox.style.cursor = 'pointer';
+      myBox.onclick = function() { selectRole(me); };
       myBoxSub.textContent = 'Neue Runde starten';
       opBoxSub.textContent = 'Anderes Geraet';
     } else {
       var round = data[0];
       if (!round.p1_done) {
+        myBox.style.opacity = '0.4'; myBox.style.cursor = 'default';
+        myBox.onclick = null;
         if (round.starter === me) {
-          // I'm currently playing (shouldn't happen but just in case)
-          myBox.style.opacity = '0.4'; myBox.style.cursor = 'default';
           myBoxSub.textContent = 'Du spielst gerade...';
         } else {
-          // Opponent is playing
-          myBox.style.opacity = '0.4'; myBox.style.cursor = 'default';
           myBoxSub.textContent = 'Warte bis Gegner fertig ist...';
         }
         opBoxSub.textContent = 'Anderes Geraet';
       } else {
-        // p1 done
         if (round.starter === me) {
-          // I already played, waiting for opponent
           myBox.style.opacity = '0.4'; myBox.style.cursor = 'default';
+          myBox.onclick = null;
           myBoxSub.textContent = 'Du hast gespielt. Warte auf Gegner!';
-          opBoxSub.textContent = 'Anderes Geraet';
         } else {
-          // Opponent played, I can join
           myBox.style.opacity = '1'; myBox.style.cursor = 'pointer';
+          myBox.onclick = function() { selectRole(me); };
           myBoxSub.textContent = 'Runde beitreten!';
-          opBoxSub.textContent = 'Hat bereits gespielt';
         }
+        opBoxSub.textContent = 'Anderes Geraet';
       }
     }
-  }).catch(function() {});
+  }).catch(function() {
+    myBox.style.opacity = '1'; myBox.style.cursor = 'pointer';
+    myBox.onclick = function() { selectRole(me); };
+    myBoxSub.textContent = 'Neue Runde starten';
+  });
 }
+
 
 function selectRole(role) {
   // Only allow selecting your own identity
