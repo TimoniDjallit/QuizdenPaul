@@ -139,6 +139,29 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
 .round-popup-score-name{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
 .round-popup-score-num{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:1;color:var(--accent);}
 .round-popup-score-num.loser{color:var(--muted);}
+
+.waiting-box{background:var(--surface);border:2px solid rgba(240,192,64,.3);border-radius:20px;padding:40px 28px;text-align:center;margin-bottom:24px;}
+.waiting-spinner{width:40px;height:40px;border:3px solid var(--surface2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.waiting-title{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--accent);margin-bottom:8px;}
+.waiting-sub{font-size:14px;color:var(--muted);line-height:1.6;}
+.round-code{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:8px;color:var(--text);background:var(--surface2);border-radius:12px;padding:16px 24px;margin:16px 0;display:inline-block;}
+.role-select-box{background:var(--surface);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px;margin-bottom:12px;cursor:pointer;transition:border-color .2s,background .2s;}
+.role-select-box:hover{border-color:var(--accent);background:rgba(240,192,64,.04);}
+.role-select-name{font-family:'Bebas Neue',sans-serif;font-size:36px;margin-bottom:4px;}
+.role-select-name.p1{color:var(--accent);}
+.role-select-name.p2{color:var(--accent2);}
+.role-select-sub{font-size:13px;color:var(--muted);}
+
+.challenge-popup{position:fixed;top:24px;right:24px;width:300px;background:var(--surface);border:2px solid var(--accent);border-radius:20px;padding:20px 24px;z-index:150;display:none;animation:slideDownPop .4s ease;}
+.challenge-popup.show{display:block;}
+@keyframes slideDownPop{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.challenge-icon{font-size:36px;flex-shrink:0;}
+.challenge-body{flex:1;}
+.challenge-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);margin-bottom:2px;}
+.challenge-sub{font-size:13px;color:var(--muted);}
+.challenge-btn{background:var(--accent);color:#0a0a0f;border:none;padding:12px 20px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;border-radius:10px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.challenge-dismiss{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;}
 </style>
 </head>
 <body>
@@ -152,6 +175,16 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
   </div>
 </div>
 
+
+
+<!-- CHALLENGE POPUP (shown on home screen when opponent has open round) -->
+<div class="challenge-popup" id="challengePopup">
+  <button class="challenge-dismiss" onclick="dismissChallenge()">&#10005;</button>
+  <div style="font-size:28px;margin-bottom:8px;">&#9876;</div>
+  <div class="challenge-title" id="challengeTitle">Herausforderung!</div>
+  <div class="challenge-sub" id="challengeSub" style="margin-bottom:14px;">Hat eine Runde gestartet.</div>
+  <button class="challenge-btn" onclick="acceptChallenge()" style="width:100%;">SPIELEN</button>
+</div>
 
 <!-- ROUND RESULT POPUP -->
 <div class="round-popup-overlay" id="roundPopup">
@@ -219,28 +252,43 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
   <!-- VS START SCREEN -->
   <div class="screen" id="vsStartScreen">
     <div class="vs-title">VS<br>MODUS</div>
-    <p class="vs-sub">10 Fragen &middot; Wer weiss mehr?</p>
-    <div class="player-card p1">
-      <div class="player-name">TIMON</div>
-      <div class="player-ready">Spielt zuerst &mdash; 10 Fragen</div>
+    <p class="vs-sub">Jeder spielt auf seinem eigenen Geraet</p>
+    <div class="role-select-box" onclick="selectRole('timon')">
+      <div class="role-select-name p1">TIMON</div>
+      <div class="role-select-sub">Neue Runde starten &mdash; Paul erhaelt den Code</div>
     </div>
-    <div class="player-card p2">
-      <div class="player-name">PAUL</div>
-      <div class="player-ready">Spielt danach &mdash; gleiche 10 Fragen</div>
+    <div class="role-select-box" onclick="selectRole('paul')">
+      <div class="role-select-name p2">PAUL</div>
+      <div class="role-select-sub">Code eingeben und mitspielen</div>
     </div>
-    <button class="btn-primary" style="margin-top:24px;" onclick="startVsRound()">RUNDE STARTEN</button>
     <button class="btn-secondary" onclick="openVsStats()">&#128200; VS Statistiken</button>
     <button class="btn-secondary" onclick="showScreen('startScreen')">&#8592; Hauptmenue</button>
   </div>
 
-  <!-- VS HANDOFF SCREEN (between players) -->
-  <div class="screen" id="vsHandoffScreen">
-    <div class="handoff-box">
-      <div class="handoff-icon">&#128073;</div>
-      <div class="handoff-title" id="handoffTitle">PAUL DRAN!</div>
-      <p class="handoff-sub" id="handoffSub">Timon ist fertig.<br>Gib das Handy an Paul weiter!</p>
+  <!-- TIMON WAITING SCREEN (after finishing, waiting for Paul) -->
+  <div class="screen" id="vsWaitScreen">
+    <div class="vs-title">WARTEN</div>
+    <p class="vs-sub">Paul ist dran</p>
+    <div class="waiting-box">
+      <div class="waiting-spinner"></div>
+      <div class="waiting-title">Warte auf Paul...</div>
+      <p class="waiting-sub">Schick Paul diesen Code:</p>
+      <div class="round-code" id="vsRoundCode">----</div>
+      <p class="waiting-sub">Er gibt ihn in seiner App ein.</p>
     </div>
-    <button class="btn-primary" onclick="startPlayer2()">ICH BIN BEREIT</button>
+    <button class="btn-secondary" onclick="checkPaulDone()">Aktualisieren &#8635;</button>
+    <button class="btn-secondary" onclick="showScreen('vsStartScreen')">&#8592; Zurueck</button>
+  </div>
+
+  <!-- PAUL CODE INPUT SCREEN -->
+  <div class="screen" id="vsCodeScreen">
+    <div class="vs-title">CODE<br>EINGEBEN</div>
+    <p class="vs-sub">Timons Rundencode</p>
+    <input class="answer-input" id="vsCodeInput" type="text" placeholder="z.B. AB12" maxlength="4"
+      style="text-align:center;font-family:Bebas Neue,sans-serif;font-size:36px;letter-spacing:8px;text-transform:uppercase;margin-bottom:16px;"/>
+    <button class="btn-primary" onclick="joinRound()">BEITRETEN</button>
+    <button class="btn-secondary" onclick="showScreen('vsStartScreen')">&#8592; Zurueck</button>
+    <p id="vsCodeError" style="color:var(--wrong);font-size:14px;text-align:center;margin-top:12px;display:none;">Code nicht gefunden. Nochmal versuchen!</p>
   </div>
 
   <!-- VS QUIZ SCREEN -->
@@ -332,7 +380,7 @@ var Q = [
   {c:"Wissenschaft",q:"Welches Tier hat das komplexeste Nervensystem unter Wirbellosen?",a:"Oktopus"},
   {c:"Wissenschaft",q:"Wie heisst die Wissenschaft von den Pilzen?",a:"Mykologie"},
   {c:"Wissenschaft",q:"Wie heisst der Hauptbestandteil von Erdgas?",a:"Methan"},
-  {c:"Wissenschaft",q:"Welcher Wissenschaftler entdeckte die Radioaktivitaet?",a:"Henri Becquerel"},
+  {c:"Wissenschaft",q:"Welcher Wissenschaftler entdeckte die Radioaktivitaet?",a:"Marie Curie"},
   {c:"Wissenschaft",q:"Welches Tier hat das groesste Gehirn aller Landtiere?",a:"Elefant"},
   {c:"Wissenschaft",q:"Wie heisst die Huelle um die Erde die UV-Strahlung filtert?",a:"Ozonschicht"},
   {c:"Wissenschaft",q:"Wie heisst der Vorgang bei dem ein Feststoff direkt zu Gas wird?",a:"Sublimation"},
@@ -612,6 +660,9 @@ var Q = [
 // STATE
 var seen = new Set(JSON.parse(localStorage.getItem('qz_seen') || '[]'));
 
+// Start polling when page loads (we start on startScreen)
+window.addEventListener('load', function() { startHomePolling(); });
+
 // VS MODE STATE
 // VS match history stored in localStorage as array of match objects
 var vsQuestions = [];      // 10 question indices for this round
@@ -636,6 +687,12 @@ function showScreen(id) {
   var screens = document.querySelectorAll('.screen');
   for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
   document.getElementById(id).classList.add('active');
+  if (id === 'startScreen') {
+    startHomePolling();
+  } else {
+    stopHomePolling();
+    hideChallengePopup();
+  }
 }
 
 function buildDeck() {
@@ -769,7 +826,121 @@ function openStats() {
   showScreen('statsScreen');
 }
 
+// ── SUPABASE CONFIG ──
+var SB_URL = 'https://vsabdetvbwhebgeapfrj.supabase.co';
+var SB_KEY = 'sb_publishable__GK51qXNeNGR043MAcDuyg_kltKO6rX';
+
+// Challenge polling
+var homePollingInterval = null;
+var pendingChallengeId = null;
+var pendingChallengeQuestions = null;
+var dismissedRoundId = null;
+
+function sbFetch(path, method, body) {
+  return fetch(SB_URL + '/rest/v1/' + path, {
+    method: method || 'GET',
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    },
+    body: body ? JSON.stringify(body) : undefined
+  }).then(function(r) { return r.json(); });
+}
+
+function genCode() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code = '';
+  for (var i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
 // ── VS MODE FUNCTIONS ──
+var vsRole = '';        // 'timon' or 'paul'
+var vsRoundId = '';     // current round code
+var vsPollInterval = null;
+
+function startHomePolling() {
+  stopHomePolling();
+  pollForChallenge();
+  homePollingInterval = setInterval(pollForChallenge, 10000);
+}
+
+function stopHomePolling() {
+  if (homePollingInterval) { clearInterval(homePollingInterval); homePollingInterval = null; }
+}
+
+function pollForChallenge() {
+  // Look for a round that is p1_done=false (still being played by opponent)
+  // OR p1_done=true and p2_done=false (waiting for us)
+  sbFetch('rounds?p2_done=eq.false&order=created_at.desc&limit=1&select=*').then(function(data) {
+    if (!data || data.length === 0) {
+      hideChallengePopup();
+      return;
+    }
+    var round = data[0];
+    // Don't show if we started this round (we are timon and p1 not done yet)
+    // Don't show if we already dismissed this round
+    if (round.id === dismissedRoundId) return;
+    // Only show if p1 is done (Timon finished, waiting for Paul)
+    if (!round.p1_done) return;
+    // Show popup
+    pendingChallengeId = round.id;
+    pendingChallengeQuestions = round.questions;
+    var starter = vsRole === 'paul' ? 'Timon' : 'Der andere Spieler';
+    document.getElementById('challengeTitle').textContent = 'Herausforderung!';
+    document.getElementById('challengeSub').textContent = starter + ' hat eine Runde gespielt. Du bist dran!';
+    document.getElementById('challengePopup').classList.add('show');
+  }).catch(function() {});
+}
+
+function hideChallengePopup() {
+  document.getElementById('challengePopup').classList.remove('show');
+}
+
+function dismissChallenge() {
+  dismissedRoundId = pendingChallengeId;
+  hideChallengePopup();
+}
+
+function acceptChallenge() {
+  hideChallengePopup();
+  stopHomePolling();
+  // Load the round and join as Paul
+  sbFetch('rounds?id=eq.' + pendingChallengeId + '&select=*').then(function(data) {
+    if (!data || data.length === 0) return;
+    var round = data[0];
+    vsRoundId = round.id;
+    vsQuestions = round.questions;
+    vsQIdx = 0;
+    vsCurrentPlayer = 2;
+    vsAnswered = false;
+    vsScores = [round.p1_score || 0, 0];
+    vsRoundDetails = [];
+    for (var i = 0; i < vsQuestions.length; i++) {
+      var p1d = round.p1_details ? round.p1_details[i] : null;
+      vsRoundDetails.push({q: Q[vsQuestions[i]].q, a: Q[vsQuestions[i]].a, cat: Q[vsQuestions[i]].c, p1: p1d, p2: null});
+    }
+    document.getElementById('vsPlayerTag').className = 'mp-player-tag p2';
+    document.getElementById('vsPlayerTag').textContent = 'PAUL';
+    showScreen('vsQuizScreen');
+    vsRenderNext();
+  });
+}
+
+function selectRole(role) {
+  vsRole = role;
+  if (role === 'timon') {
+    startVsRound();
+  } else {
+    showScreen('vsCodeScreen');
+    setTimeout(function() {
+      var inp = document.getElementById('vsCodeInput');
+      if (inp) inp.focus();
+    }, 100);
+  }
+}
 
 function startVsRound() {
   // Pick 10 random questions
@@ -786,21 +957,58 @@ function startVsRound() {
   for (var i = 0; i < 10; i++) {
     vsRoundDetails.push({q: Q[indices[i]].q, a: Q[indices[i]].a, cat: Q[indices[i]].c, p1: null, p2: null});
   }
-  // Update player tag colors
-  document.getElementById('vsPlayerTag').className = 'mp-player-tag p1';
-  document.getElementById('vsPlayerTag').textContent = 'TIMON';
-  showScreen('vsQuizScreen');
-  vsRenderNext();
+
+  vsRoundId = genCode();
+  document.getElementById('vsRoundCode').textContent = vsRoundId;
+
+  // Save round to Supabase
+  sbFetch('rounds', 'POST', {
+    id: vsRoundId,
+    questions: indices,
+    p1_done: false,
+    p2_done: false
+  }).then(function() {
+    // Start playing
+    document.getElementById('vsPlayerTag').className = 'mp-player-tag p1';
+    document.getElementById('vsPlayerTag').textContent = 'TIMON';
+    showScreen('vsQuizScreen');
+    vsRenderNext();
+  }).catch(function() {
+    // Fallback if offline - still play
+    document.getElementById('vsPlayerTag').className = 'mp-player-tag p1';
+    document.getElementById('vsPlayerTag').textContent = 'TIMON';
+    showScreen('vsQuizScreen');
+    vsRenderNext();
+  });
 }
 
-function startPlayer2() {
-  vsQIdx = 0;
-  vsCurrentPlayer = 2;
-  vsAnswered = false;
-  document.getElementById('vsPlayerTag').className = 'mp-player-tag p2';
-  document.getElementById('vsPlayerTag').textContent = 'PAUL';
-  showScreen('vsQuizScreen');
-  vsRenderNext();
+function joinRound() {
+  var code = document.getElementById('vsCodeInput').value.trim().toUpperCase();
+  if (code.length < 4) return;
+  document.getElementById('vsCodeError').style.display = 'none';
+
+  sbFetch('rounds?id=eq.' + code + '&select=*').then(function(data) {
+    if (!data || data.length === 0) {
+      document.getElementById('vsCodeError').style.display = 'block';
+      return;
+    }
+    var round = data[0];
+    vsRoundId = code;
+    vsQuestions = round.questions;
+    vsQIdx = 0;
+    vsCurrentPlayer = 2;
+    vsAnswered = false;
+    vsScores = [round.p1_score || 0, 0];
+    vsRoundDetails = [];
+    for (var i = 0; i < vsQuestions.length; i++) {
+      var p1d = round.p1_details ? round.p1_details[i] : null;
+      vsRoundDetails.push({q: Q[vsQuestions[i]].q, a: Q[vsQuestions[i]].a, cat: Q[vsQuestions[i]].c, p1: p1d, p2: null});
+    }
+    document.getElementById('vsPlayerTag').className = 'mp-player-tag p2';
+    document.getElementById('vsPlayerTag').textContent = 'PAUL';
+    showScreen('vsQuizScreen');
+    vsRenderNext();
+  });
 }
 
 function vsRenderNext() {
@@ -878,14 +1086,53 @@ function vsNext() {
 
 function vsRoundDone() {
   if (vsCurrentPlayer === 1) {
-    // Timon done, hand off to Paul
-    document.getElementById('handoffTitle').textContent = 'PAUL DRAN!';
-    document.getElementById('handoffSub').innerHTML = 'Timon ist fertig.<br>Gib das Handy an Paul weiter!';
-    showScreen('vsHandoffScreen');
+    // Save Timon's result to Supabase, then show wait screen
+    sbFetch('rounds?id=eq.' + vsRoundId, 'PATCH', {
+      p1_score: vsScores[0],
+      p1_details: vsRoundDetails.map(function(d) { return d.p1; }),
+      p1_done: true
+    }).then(function() {
+      showScreen('vsWaitScreen');
+      startPolling();
+    }).catch(function() {
+      showScreen('vsWaitScreen');
+    });
   } else {
-    // Both done, show results
-    vsShowResults();
+    // Save Paul's result then show results
+    sbFetch('rounds?id=eq.' + vsRoundId, 'PATCH', {
+      p2_score: vsScores[1],
+      p2_details: vsRoundDetails.map(function(d) { return d.p2; }),
+      p2_done: true
+    }).then(function() {
+      vsShowResults();
+    }).catch(function() {
+      vsShowResults();
+    });
   }
+}
+
+function startPolling() {
+  if (vsPollInterval) clearInterval(vsPollInterval);
+  vsPollInterval = setInterval(checkPaulDone, 5000);
+}
+
+function checkPaulDone() {
+  sbFetch('rounds?id=eq.' + vsRoundId + '&select=*').then(function(data) {
+    if (!data || data.length === 0) return;
+    var round = data[0];
+    if (round.p2_done) {
+      if (vsPollInterval) clearInterval(vsPollInterval);
+      // Load Paul's data and show results
+      vsScores = [round.p1_score || 0, round.p2_score || 0];
+      if (round.p1_details && round.p2_details) {
+        for (var i = 0; i < vsRoundDetails.length; i++) {
+          vsRoundDetails[i].p1 = round.p1_details[i];
+          vsRoundDetails[i].p2 = round.p2_details[i];
+        }
+      }
+      vsShowResults();
+    }
+  });
 }
 
 function loadVsHistory() {
