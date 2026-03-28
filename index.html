@@ -285,11 +285,11 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
   <!-- TIMON WAITING SCREEN (after finishing, waiting for Paul) -->
   <div class="screen" id="vsWaitScreen">
     <div class="vs-title">WARTEN</div>
-    <p class="vs-sub">Paul ist dran</p>
+    <p class="vs-sub" id="vsWaitSub">Gegner ist dran</p>
     <div class="waiting-box">
       <div class="waiting-spinner"></div>
-      <div class="waiting-title">Warte auf Paul...</div>
-      <p class="waiting-sub">Paul wird benachrichtigt sobald er die App oeffnet.</p>
+      <div class="waiting-title" id="vsWaitTitle">Warte auf Gegner...</div>
+      <p class="waiting-sub">Dein Gegner wird benachrichtigt sobald er die App oeffnet.</p>
     </div>
     <button class="btn-secondary" onclick="checkPaulDone()">Aktualisieren &#8635;</button>
     <button class="btn-secondary" onclick="openVsMode()">&#8592; Zurueck</button>
@@ -1192,9 +1192,15 @@ function vsRoundDone() {
       p1_details: vsRoundDetails.map(function(d) { return d.p1; }),
       p1_done: true
     }).then(function() {
+      var opponent = vsRole === 'timon' ? 'Paul' : 'Timon';
+      document.getElementById('vsWaitSub').textContent = opponent + ' ist dran';
+      document.getElementById('vsWaitTitle').textContent = 'Warte auf ' + opponent + '...';
       showScreen('vsWaitScreen');
       startPolling();
     }).catch(function() {
+      var opponent = vsRole === 'timon' ? 'Paul' : 'Timon';
+      document.getElementById('vsWaitSub').textContent = opponent + ' ist dran';
+      document.getElementById('vsWaitTitle').textContent = 'Warte auf ' + opponent + '...';
       showScreen('vsWaitScreen');
     });
   } else {
