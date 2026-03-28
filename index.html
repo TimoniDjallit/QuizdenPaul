@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -72,6 +71,74 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
 .progress-bar{height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;}
 .progress-fill{height:100%;border-radius:99px;transition:width .4s ease;}
 .cat-detail{font-size:12px;color:var(--muted);margin-top:6px;}
+
+.vs-title{font-family:'Bebas Neue',sans-serif;font-size:56px;line-height:.9;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+.vs-sub{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:40px;}
+.player-card{background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:28px 32px;margin-bottom:16px;position:relative;overflow:hidden;}
+.player-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.player-card.p1::before{background:var(--accent);}
+.player-card.p2::before{background:var(--accent2);}
+.player-name{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--text);margin-bottom:4px;}
+.player-ready{font-size:14px;color:var(--muted);}
+.result-card{background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:28px 32px;margin-bottom:16px;position:relative;overflow:hidden;text-align:center;}
+.result-card.winner{border-color:var(--accent);}
+.result-card.loser{opacity:.7;}
+.result-player{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.result-score{font-family:'Bebas Neue',sans-serif;font-size:72px;line-height:1;color:var(--accent);}
+.result-score.red{color:var(--wrong);}
+.result-label{font-size:13px;color:var(--muted);margin-top:4px;}
+.result-winner-badge{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--accent);margin-top:8px;}
+.handoff-box{background:var(--surface);border:2px solid var(--accent);border-radius:20px;padding:36px 28px;text-align:center;margin-bottom:24px;}
+.handoff-icon{font-size:48px;margin-bottom:16px;}
+.handoff-title{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--accent);margin-bottom:8px;}
+.handoff-sub{font-size:15px;color:var(--muted);line-height:1.6;}
+.mp-counter{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--accent);line-height:1;}
+.mp-counter span{font-size:14px;color:var(--muted);font-family:'DM Sans',sans-serif;display:block;margin-top:2px;}
+.mp-player-tag{display:inline-block;font-size:12px;letter-spacing:3px;text-transform:uppercase;padding:4px 12px;border-radius:99px;margin-bottom:20px;}
+.mp-player-tag.p1{background:rgba(240,192,64,.15);color:var(--accent);}
+.mp-player-tag.p2{background:rgba(224,90,43,.15);color:var(--accent2);}
+
+.vs-stats-title{font-family:'Bebas Neue',sans-serif;font-size:56px;line-height:.9;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+.vs-stats-sub{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:32px;}
+.standings-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;}
+.standing-box{background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:24px 16px;text-align:center;}
+.standing-box.leader{border-color:var(--accent);}
+.standing-name{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.standing-wins{font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--accent);line-height:1;}
+.standing-wins.red{color:var(--wrong);}
+.standing-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.match-item{background:var(--surface);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:8px;overflow:hidden;}
+.match-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;}
+.match-header:hover{background:rgba(255,255,255,.03);}
+.match-num{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.match-score{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text);}
+.match-winner-tag{font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:99px;background:rgba(240,192,64,.15);color:var(--accent);}
+.match-arrow{color:var(--muted);transition:transform .2s;font-size:12px;}
+.match-arrow.open{transform:rotate(180deg);}
+.match-detail{display:none;border-top:1px solid rgba(255,255,255,.05);}
+.match-detail.open{display:block;}
+.detail-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.03);font-size:13px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-q{color:var(--muted);line-height:1.3;}
+.detail-icon{font-size:16px;text-align:center;}
+.detail-header{display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:8px 18px;background:rgba(255,255,255,.02);}
+.detail-header-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:center;}
+
+.round-popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;}
+.round-popup-overlay.show{display:flex;animation:fadeIn .3s ease;}
+.round-popup{background:var(--surface);border-radius:24px;padding:40px 32px;max-width:380px;width:100%;text-align:center;border:1px solid rgba(255,255,255,.08);}
+.round-popup-trophy{font-size:64px;margin-bottom:12px;display:block;}
+.round-popup-winner{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:1;margin-bottom:6px;}
+.round-popup-winner.timon{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.round-popup-winner.paul{background:linear-gradient(135deg,var(--accent2),#ff6b9d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.round-popup-winner.draw{color:var(--muted);}
+.round-popup-score{font-size:28px;font-family:'Bebas Neue',sans-serif;color:var(--text);margin-bottom:8px;}
+.round-popup-sub{font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.5;}
+.round-popup-scores{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px;}
+.round-popup-score-box{background:var(--surface2);border-radius:12px;padding:16px 10px;}
+.round-popup-score-name{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.round-popup-score-num{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:1;color:var(--accent);}
+.round-popup-score-num.loser{color:var(--muted);}
 </style>
 </head>
 <body>
@@ -85,14 +152,36 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
   </div>
 </div>
 
+
+<!-- ROUND RESULT POPUP -->
+<div class="round-popup-overlay" id="roundPopup">
+  <div class="round-popup">
+    <span class="round-popup-trophy" id="rpTrophy">&#127942;</span>
+    <div class="round-popup-winner" id="rpWinner">TIMON</div>
+    <div class="round-popup-sub" id="rpSub">gewinnt diese Runde!</div>
+    <div class="round-popup-scores">
+      <div class="round-popup-score-box">
+        <div class="round-popup-score-name">TIMON</div>
+        <div class="round-popup-score-num" id="rpScoreT">0</div>
+      </div>
+      <div class="round-popup-score-box">
+        <div class="round-popup-score-name">PAUL</div>
+        <div class="round-popup-score-num" id="rpScoreP">0</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="closeRoundPopup()">WEITER</button>
+  </div>
+</div>
+
 <div class="container">
 
   <div class="screen active" id="startScreen">
     <p class="welcome">Willkommen zu</p>
     <div class="start-logo">PAUL<br>WEISS<br>NICHTS</div>
-    <p class="start-sub">Allgemeinwissen &middot; 200 Fragen</p>
+    <p class="start-sub">Allgemeinwissen</p>
     <p class="start-desc">Geschichte, Wissenschaft, Geografie, Musik, Kultur &amp; Kunst und Technologie.</p>
     <button class="btn-primary" onclick="startQuiz()">LOS GEHT&#39;S</button>
+    <button class="btn-secondary" onclick="showScreen('vsStartScreen')">&#9876; VS Modus</button>
     <button class="btn-secondary" onclick="openStats()">&#128202; Statistiken</button>
   </div>
 
@@ -125,6 +214,67 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
     <div id="catStats" style="margin-bottom:28px;"></div>
     <button class="btn-primary" onclick="startQuiz()">WEITERSPIELEN</button>
     <button class="btn-secondary" onclick="showScreen('startScreen')">&#8592; Hauptmenue</button>
+  </div>
+
+  <!-- VS START SCREEN -->
+  <div class="screen" id="vsStartScreen">
+    <div class="vs-title">VS<br>MODUS</div>
+    <p class="vs-sub">10 Fragen &middot; Wer weiss mehr?</p>
+    <div class="player-card p1">
+      <div class="player-name">TIMON</div>
+      <div class="player-ready">Spielt zuerst &mdash; 10 Fragen</div>
+    </div>
+    <div class="player-card p2">
+      <div class="player-name">PAUL</div>
+      <div class="player-ready">Spielt danach &mdash; gleiche 10 Fragen</div>
+    </div>
+    <button class="btn-primary" style="margin-top:24px;" onclick="startVsRound()">RUNDE STARTEN</button>
+    <button class="btn-secondary" onclick="openVsStats()">&#128200; VS Statistiken</button>
+    <button class="btn-secondary" onclick="showScreen('startScreen')">&#8592; Hauptmenue</button>
+  </div>
+
+  <!-- VS HANDOFF SCREEN (between players) -->
+  <div class="screen" id="vsHandoffScreen">
+    <div class="handoff-box">
+      <div class="handoff-icon">&#128073;</div>
+      <div class="handoff-title" id="handoffTitle">PAUL DRAN!</div>
+      <p class="handoff-sub" id="handoffSub">Timon ist fertig.<br>Gib das Handy an Paul weiter!</p>
+    </div>
+    <button class="btn-primary" onclick="startPlayer2()">ICH BIN BEREIT</button>
+  </div>
+
+  <!-- VS QUIZ SCREEN -->
+  <div class="screen" id="vsQuizScreen">
+    <div class="quiz-header">
+      <div class="mp-counter" id="vsCounter">1<span id="vsCounterSub">/ 10 &middot; TIMON</span></div>
+    </div>
+    <div class="mp-player-tag p1" id="vsPlayerTag">TIMON</div>
+    <div id="vsQuestionArea"></div>
+    <div class="feedback-bar" id="vsFeedbackBar">
+      <div class="feedback-icon" id="vsFbIcon"></div>
+      <div class="feedback-text" id="vsFbText"></div>
+    </div>
+    <button class="next-btn" id="vsNextBtn" onclick="vsNext()">NAECHSTE FRAGE &#8594;</button>
+  </div>
+
+  <!-- VS RESULT SCREEN -->
+  <div class="screen" id="vsResultScreen">
+    <div class="vs-title">ERGEBNIS</div>
+    <p class="vs-sub" id="vsResultSub">Runde abgeschlossen</p>
+    <div id="vsResultCards"></div>
+    <div style="margin-top:8px;">
+      <button class="btn-primary" onclick="startVsRound()">NEUE RUNDE</button>
+      <button class="btn-secondary" onclick="showScreen('startScreen')">&#8592; Hauptmenue</button>
+    </div>
+  </div>
+
+  <!-- VS STATS SCREEN -->
+  <div class="screen" id="vsStatsScreen">
+    <div class="vs-stats-title">VS<br>STATS</div>
+    <p class="vs-stats-sub">Gesamtstand &amp; Matchhistorie</p>
+    <div class="standings-row" id="vsStandings"></div>
+    <div id="vsMatchHistory"></div>
+    <button class="btn-secondary" onclick="showScreen('vsStartScreen')">&#8592; VS Modus</button>
   </div>
 
 </div>
@@ -231,7 +381,7 @@ var Q = [
   {c:"Geografie",q:"Welches Land hat die groessten Lithiumvorkommen der Welt?",a:"Chile"},
   {c:"Geografie",q:"Wie heisst der Vulkan der 1815 die groesste Eruption der Neuzeit hatte?",a:"Tambora"},
   {c:"Geografie",q:"Wie heisst das Gebirge das Russland von Georgien trennt?",a:"Kaukasus"},
-  {c:"Geografie",q:"In welchem Land liegt das Tote Meer?",a:"Palästina"},
+  {c:"Geografie",q:"In welchem Land liegt das Tote Meer?",a:"Israel"},
   {c:"Geografie",q:"Wie heisst die Hauptstadt von Irak?",a:"Bagdad"},
   {c:"Geografie",q:"Wie heisst der hoechste Berg Suedamerikas?",a:"Aconcagua"},
   {c:"Geografie",q:"Wie heisst die Hauptstadt von Kenia?",a:"Nairobi"},
@@ -345,11 +495,133 @@ var Q = [
   {c:"Technologie",q:"Wer erfand den Dieselmotor?",a:"Rudolf Diesel"},
   {c:"Technologie",q:"Was bedeutet HTTP?",a:"Hypertext Transfer Protocol"},
   {c:"Technologie",q:"Wer erfand das Penicillin?",a:"Alexander Fleming"},
-  {c:"Technologie",q:"Was bedeutet API?",a:"Application Programming Interface"}
+  {c:"Technologie",q:"Was bedeutet API?",a:"Application Programming Interface"},
+  // GESCHICHTE (neue 17)
+  {c:"Geschichte",q:"Welches Land hat im Ersten Weltkrieg auf der Seite der Alliierten gegen Deutschland gekaempft?",a:"Frankreich"},
+  {c:"Geschichte",q:"Wie hiess der Generalplan der Nazis zur Besiedlung Osteuropas?",a:"Generalplan Ost"},
+  {c:"Geschichte",q:"In welchem Jahr wurde Abraham Lincoln ermordet?",a:"1865"},
+  {c:"Geschichte",q:"Welcher Papst rief den Ersten Kreuzzug aus?",a:"Urban II"},
+  {c:"Geschichte",q:"In welchem Jahr fand die Boston Tea Party statt?",a:"1773"},
+  {c:"Geschichte",q:"Wie hiess der letzte aztekische Herrscher?",a:"Montezuma II"},
+  {c:"Geschichte",q:"In welchem Jahr wurde Galileo Galilei von der Inquisition verurteilt?",a:"1633"},
+  {c:"Geschichte",q:"Welcher Koenig liess die Haengende Gaerten von Babylon bauen?",a:"Nebukadnezar II"},
+  {c:"Geschichte",q:"In welchem Jahr wurde das Konzentrationslager Dachau eroeffnet?",a:"1933"},
+  {c:"Geschichte",q:"Wie hiess der Gruender des Malischen Reiches im 13. Jahrhundert?",a:"Sundiata Keita"},
+  {c:"Geschichte",q:"In welchem Jahr wurde Winston Churchill zum ersten Mal Premierminister?",a:"1940"},
+  {c:"Geschichte",q:"Welches Ereignis beendete die Herrschaft der Azteken in Mexiko?",a:"Spanische Eroberung"},
+  {c:"Geschichte",q:"In welchem Jahr wurde die Unabhaengigkeitserklaerung der USA unterzeichnet?",a:"1776"},
+  {c:"Geschichte",q:"Wie hiess der franzoesische General der die Niederlage bei Dien Bien Phu erlitt?",a:"de Castries"},
+  {c:"Geschichte",q:"In welchem Jahr endete der Dreissigjaehrige Krieg?",a:"1648"},
+  {c:"Geschichte",q:"Welches Land war das erste das die Olympischen Spiele der Neuzeit ausrichtete?",a:"Griechenland"},
+  {c:"Geschichte",q:"In welchem Jahr wurde die Berliner Luftbruecke beendet?",a:"1949"},
+
+  // WISSENSCHAFT (neue 17)
+  {c:"Wissenschaft",q:"Welches Tier hat das groesste Gehirn im Verhaeltnis zu seinem Koerpergewicht?",a:"Kolibri"},
+  {c:"Wissenschaft",q:"Wie heisst das Prinzip das besagt dass man nicht gleichzeitig Ort und Impuls eines Teilchens kennen kann?",a:"Unschaerfeprinzip"},
+  {c:"Wissenschaft",q:"Welches Gas wird bei der Gaerung von Zucker produziert?",a:"Kohlendioxid"},
+  {c:"Wissenschaft",q:"Wie heisst der Wissenschaftler der die Struktur der DNA entdeckte zusammen mit Watson?",a:"Crick"},
+  {c:"Wissenschaft",q:"In welchem Organ werden rote Blutkoerperchen produziert?",a:"Knochenmark"},
+  {c:"Wissenschaft",q:"Wie heisst der Effekt bei dem Licht seine Frequenz aendert wenn sich die Quelle bewegt?",a:"Doppler-Effekt"},
+  {c:"Wissenschaft",q:"Welches chemische Element ist in Rubinen fuer die rote Farbe verantwortlich?",a:"Chrom"},
+  {c:"Wissenschaft",q:"Wie heisst der Prozess bei dem DNA kopiert wird?",a:"Replikation"},
+  {c:"Wissenschaft",q:"Welches Tier hat das laengste Gedaechtnis unter Saeugetieren?",a:"Elefant"},
+  {c:"Wissenschaft",q:"Wie heisst die Einheit der Frequenz?",a:"Hertz"},
+  {c:"Wissenschaft",q:"Welches Organ steuert den Schlaf-Wach-Rhythmus des Menschen?",a:"Zirbeldrueuse"},
+  {c:"Wissenschaft",q:"Wie viele Sinne hat der Mensch laut klassischer Einteilung?",a:"5"},
+  {c:"Wissenschaft",q:"Welcher Planet hat den groessten Sturm im Sonnensystem?",a:"Jupiter"},
+  {c:"Wissenschaft",q:"Wie heisst die Wissenschaft von den Steinen und Mineralien?",a:"Mineralogie"},
+  {c:"Wissenschaft",q:"Welches Tier kann seinen Kopf um 270 Grad drehen?",a:"Eule"},
+  {c:"Wissenschaft",q:"Wie heisst das staerkste bekannte Material?",a:"Graphen"},
+  {c:"Wissenschaft",q:"Welches Element hat die hoechste Schmelztemperatur?",a:"Wolfram"},
+
+  // GEOGRAFIE (neue 17)
+  {c:"Geografie",q:"Welches ist der einzige Kontinent ohne aktive Vulkane?",a:"Australien"},
+  {c:"Geografie",q:"Wie heisst die Hauptstadt der Philippinen?",a:"Manila"},
+  {c:"Geografie",q:"Welches Land hat die meisten Nachbarlaender?",a:"China"},
+  {c:"Geografie",q:"Wie heisst der laengste Fluss Australiens?",a:"Murray"},
+  {c:"Geografie",q:"In welchem Land liegt der Vulkan Krakatau?",a:"Indonesien"},
+  {c:"Geografie",q:"Wie heisst die Hauptstadt von Kolumbien?",a:"Bogota"},
+  {c:"Geografie",q:"Welches ist das duennste Land der Welt?",a:"Chile"},
+  {c:"Geografie",q:"Wie heisst das Meer noerdlich von Russland?",a:"Nordpolarmeer"},
+  {c:"Geografie",q:"In welchem Land liegt der Amazonas-Regenwald hauptsaechlich?",a:"Brasilien"},
+  {c:"Geografie",q:"Wie heisst die Hauptstadt von Venezuela?",a:"Caracas"},
+  {c:"Geografie",q:"Welches Land liegt auf dem Aequator und hat Gletscher?",a:"Ecuador"},
+  {c:"Geografie",q:"Wie heisst der groesste See Nordamerikas?",a:"Oberer See"},
+  {c:"Geografie",q:"In welchem Land liegt der Popocatepetl?",a:"Mexiko"},
+  {c:"Geografie",q:"Wie heisst die Hauptstadt von Argentinien?",a:"Buenos Aires"},
+  {c:"Geografie",q:"Welches ist das einzige Land das in allen vier Hemisphaerien liegt?",a:"Kiribati"},
+  {c:"Geografie",q:"Wie heisst der tiefste See Afrikas?",a:"Tanganjikasee"},
+  {c:"Geografie",q:"In welchem Land liegt der Berg Fuji?",a:"Japan"},
+
+  // MUSIK (neue 16)
+  {c:"Musik",q:"Welche Band sang Wish You Were Here?",a:"Pink Floyd"},
+  {c:"Musik",q:"Wer komponierte die Oper Cosi fan tutte?",a:"Mozart"},
+  {c:"Musik",q:"In welchem Jahr wurde Michael Jackson geboren?",a:"1958"},
+  {c:"Musik",q:"Welche Saengerin ist fuer den Song Respect bekannt?",a:"Aretha Franklin"},
+  {c:"Musik",q:"Wer komponierte die Brandenburgischen Konzerte?",a:"Bach"},
+  {c:"Musik",q:"Wie heisst der Bassist von den Rolling Stones?",a:"Bill Wyman"},
+  {c:"Musik",q:"In welchem Jahr erschien das Album Abbey Road der Beatles?",a:"1969"},
+  {c:"Musik",q:"Welcher Komponist schrieb Die Schoepfung?",a:"Haydn"},
+  {c:"Musik",q:"Wie heisst der Gitarrist von Led Zeppelin?",a:"Jimmy Page"},
+  {c:"Musik",q:"In welchem Jahr starb Kurt Cobain?",a:"1994"},
+  {c:"Musik",q:"Welcher Komponist schrieb die Oper Rigoletto?",a:"Verdi"},
+  {c:"Musik",q:"Wie heisst der Saenger von The Doors?",a:"Jim Morrison"},
+  {c:"Musik",q:"In welchem Jahr wurde die Band Queen gegruendet?",a:"1970"},
+  {c:"Musik",q:"Welcher Komponist schrieb die Ungarischen Rhapsodien?",a:"Liszt"},
+  {c:"Musik",q:"Wie heisst das bekannteste Stueck von Erik Satie?",a:"Gymnopaedie"},
+  {c:"Musik",q:"In welchem Jahr erschien das erste Album von David Bowie?",a:"1967"},
+
+  // KULTUR (neue 17)
+  {c:"Kultur",q:"Wer schrieb Anna Karenina?",a:"Tolstoi"},
+  {c:"Kultur",q:"In welchem Jahr wurde das Kolosseum in Rom fertiggestellt?",a:"80"},
+  {c:"Kultur",q:"Welcher Maler ist fuer das Werk Die Erschaffung Adams bekannt?",a:"Michelangelo"},
+  {c:"Kultur",q:"Wer schrieb Die Verwandlung?",a:"Kafka"},
+  {c:"Kultur",q:"In welchem Jahr wurde der Petersdom in Rom erbaut angefangen?",a:"1506"},
+  {c:"Kultur",q:"Welcher Maler ist fuer Starry Night bekannt?",a:"Van Gogh"},
+  {c:"Kultur",q:"Wer schrieb Moby Dick?",a:"Herman Melville"},
+  {c:"Kultur",q:"In welchem Jahr wurde die Freiheitsstatue eingeweiht?",a:"1886"},
+  {c:"Kultur",q:"Welcher Maler schuf das Werk Das Maedchen mit dem Perlenohrring?",a:"Vermeer"},
+  {c:"Kultur",q:"Wer schrieb Der Graf von Monte Christo?",a:"Alexandre Dumas"},
+  {c:"Kultur",q:"In welchem Jahr wurde Notre Dame de Paris gebaut angefangen?",a:"1163"},
+  {c:"Kultur",q:"Welcher Dichter schrieb die Goettliche Komoedie?",a:"Dante"},
+  {c:"Kultur",q:"Wer schrieb Crime and Punishment auf Englisch?",a:"Dostojewski"},
+  {c:"Kultur",q:"In welchem Jahr erschien Kafkas Der Process posthum?",a:"1925"},
+  {c:"Kultur",q:"Welcher Kuenstler schuf Campbell Soup Cans?",a:"Andy Warhol"},
+  {c:"Kultur",q:"Wer schrieb Das Parfum?",a:"Patrick Suesskind"},
+  {c:"Kultur",q:"In welchem Jahr wurde die Chinesische Mauer zum Weltkulturerbe erklaert?",a:"1987"},
+
+  // TECHNOLOGIE (neue 16)
+  {c:"Technologie",q:"In welchem Jahr wurde das erste Videospiel Pong veroeffentlicht?",a:"1972"},
+  {c:"Technologie",q:"Wie heisst der Gruender von SpaceX?",a:"Elon Musk"},
+  {c:"Technologie",q:"In welchem Jahr wurde das erste Smartphone mit Touchscreen vorgestellt?",a:"2007"},
+  {c:"Technologie",q:"Wie heisst die Programmiersprache die fuer das Web entwickelt wurde?",a:"JavaScript"},
+  {c:"Technologie",q:"In welchem Jahr wurde Tesla als Unternehmen gegruendet?",a:"2003"},
+  {c:"Technologie",q:"Wie heisst der Gruender von Twitter?",a:"Jack Dorsey"},
+  {c:"Technologie",q:"In welchem Jahr erschien Windows 95?",a:"1995"},
+  {c:"Technologie",q:"Wie heisst das Programm das Quellcode in Maschinencode umwandelt?",a:"Compiler"},
+  {c:"Technologie",q:"In welchem Jahr wurde die erste Digitalkamera erfunden?",a:"1975"},
+  {c:"Technologie",q:"Wie heisst das Konzept bei dem viele Computer zusammen ein Problem loesen?",a:"Distributed Computing"},
+  {c:"Technologie",q:"In welchem Jahr wurde YouTube von Google gekauft?",a:"2006"},
+  {c:"Technologie",q:"Wie heisst der Gruender von Amazon?",a:"Jeff Bezos"},
+  {c:"Technologie",q:"In welchem Jahr erschien das erste Android-Smartphone?",a:"2008"},
+  {c:"Technologie",q:"Was bedeutet GPU?",a:"Graphics Processing Unit"},
+  {c:"Technologie",q:"In welchem Jahr wurde Uber gegruendet?",a:"2009"},
+  {c:"Technologie",q:"Wie heisst das Netzwerkprotokoll auf dem das Internet basiert?",a:"TCP/IP"},
 ];
 
 // STATE
 var seen = new Set(JSON.parse(localStorage.getItem('qz_seen') || '[]'));
+
+// VS MODE STATE
+// VS match history stored in localStorage as array of match objects
+var vsQuestions = [];      // 10 question indices for this round
+var vsQIdx = 0;            // current question index in round
+var vsCurrentPlayer = 1;   // 1 = Timon, 2 = Paul
+var vsAnswered = false;
+var vsCorrectText = '';
+var vsScores = [0, 0];     // [timon_score, paul_score]
+var vsP1Done = false;
+var vsRoundDetails = [];   // per-question details for current round
 var deck = [], deckIdx = 0, qNum = 0, answered = false, correctText = '', currentCat = '';
 
 function loadStats() {
@@ -497,6 +769,292 @@ function openStats() {
   showScreen('statsScreen');
 }
 
+// ── VS MODE FUNCTIONS ──
+
+function startVsRound() {
+  // Pick 10 random questions
+  var indices = [];
+  for (var i = 0; i < Q.length; i++) indices.push(i);
+  indices = shuffle(indices).slice(0, 10);
+  vsQuestions = indices;
+  vsQIdx = 0;
+  vsCurrentPlayer = 1;
+  vsAnswered = false;
+  vsScores = [0, 0];
+  vsP1Done = false;
+  vsRoundDetails = [];
+  for (var i = 0; i < 10; i++) {
+    vsRoundDetails.push({q: Q[indices[i]].q, a: Q[indices[i]].a, cat: Q[indices[i]].c, p1: null, p2: null});
+  }
+  // Update player tag colors
+  document.getElementById('vsPlayerTag').className = 'mp-player-tag p1';
+  document.getElementById('vsPlayerTag').textContent = 'TIMON';
+  showScreen('vsQuizScreen');
+  vsRenderNext();
+}
+
+function startPlayer2() {
+  vsQIdx = 0;
+  vsCurrentPlayer = 2;
+  vsAnswered = false;
+  document.getElementById('vsPlayerTag').className = 'mp-player-tag p2';
+  document.getElementById('vsPlayerTag').textContent = 'PAUL';
+  showScreen('vsQuizScreen');
+  vsRenderNext();
+}
+
+function vsRenderNext() {
+  if (vsQIdx >= vsQuestions.length) {
+    vsRoundDone();
+    return;
+  }
+  vsAnswered = false;
+  document.getElementById('vsFeedbackBar').className = 'feedback-bar';
+  document.getElementById('vsNextBtn').className = 'next-btn';
+
+  var q = Q[vsQuestions[vsQIdx++]];
+  vsCorrectText = q.a;
+
+  var playerName = vsCurrentPlayer === 1 ? 'TIMON' : 'PAUL';
+  document.getElementById('vsCounter').innerHTML = vsQIdx + '<span id="vsCounterSub">/ 10 &middot; ' + playerName + '</span>';
+
+  document.getElementById('vsQuestionArea').innerHTML =
+    '<div class="question-card">' +
+    '<div class="question-category">' + esc(q.c) + '</div>' +
+    '<div class="question-text">' + esc(q.q) + '</div>' +
+    '</div>' +
+    '<input class="answer-input" id="vsAnswerInput" type="text" placeholder="Antwort eingeben..." autocomplete="off" autocorrect="off" spellcheck="false"/>' +
+    '<button class="submit-btn" id="vsSubmitBtn" onclick="vsSubmit()">ANTWORTEN</button>';
+
+  setTimeout(function() {
+    var inp = document.getElementById('vsAnswerInput');
+    if (inp) {
+      inp.focus();
+      inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') vsSubmit(); });
+    }
+  }, 50);
+}
+
+function vsSubmit() {
+  if (vsAnswered) return;
+  var inp = document.getElementById('vsAnswerInput');
+  var val = inp.value.trim();
+  if (!val) return;
+
+  vsAnswered = true;
+  inp.disabled = true;
+  document.getElementById('vsSubmitBtn').disabled = true;
+
+  var ok = fuzzyMatch(val, vsCorrectText);
+  if (ok) vsScores[vsCurrentPlayer - 1]++;
+
+  // Record detail for this question
+  var qObj = Q[vsQuestions[vsQIdx - 1]];
+  var detail = {q: qObj.q, a: vsCorrectText, cat: qObj.c};
+  if (vsCurrentPlayer === 1) {
+    vsRoundDetails[vsQIdx - 1].p1 = {val: val, ok: ok};
+  } else {
+    vsRoundDetails[vsQIdx - 1].p2 = {val: val, ok: ok};
+  }
+
+  inp.classList.add(ok ? 'correct' : 'wrong');
+  var fb = document.getElementById('vsFeedbackBar');
+  fb.className = 'feedback-bar show ' + (ok ? 'correct-fb' : 'wrong-fb');
+  document.getElementById('vsFbIcon').textContent = ok ? '&#x2705;' : '&#x274C;';
+  document.getElementById('vsFbText').innerHTML = ok
+    ? '<strong>Richtig!</strong>'
+    : '<strong>Falsch!</strong> Die richtige Antwort war: <em>' + esc(vsCorrectText) + '</em>';
+
+  document.getElementById('vsNextBtn').className = 'next-btn show';
+}
+
+function vsNext() {
+  if (vsQIdx >= vsQuestions.length) {
+    vsRoundDone();
+  } else {
+    vsRenderNext();
+  }
+}
+
+function vsRoundDone() {
+  if (vsCurrentPlayer === 1) {
+    // Timon done, hand off to Paul
+    document.getElementById('handoffTitle').textContent = 'PAUL DRAN!';
+    document.getElementById('handoffSub').innerHTML = 'Timon ist fertig.<br>Gib das Handy an Paul weiter!';
+    showScreen('vsHandoffScreen');
+  } else {
+    // Both done, show results
+    vsShowResults();
+  }
+}
+
+function loadVsHistory() {
+  try { return JSON.parse(localStorage.getItem('qz_vs_history') || '[]'); } catch(e) { return []; }
+}
+function saveVsHistory(h) {
+  try { localStorage.setItem('qz_vs_history', JSON.stringify(h)); } catch(e) {}
+}
+
+function vsShowResults() {
+  // Save match to history
+  var history = loadVsHistory();
+  var match = {
+    date: new Date().toLocaleDateString('de-DE'),
+    t: vsScores[0],
+    p: vsScores[1],
+    details: vsRoundDetails
+  };
+  history.push(match);
+  saveVsHistory(history);
+  var t = vsScores[0], p = vsScores[1];
+  var timonWins = t > p, paulWins = p > t, draw = t === p;
+
+  var sub = draw ? 'Unentschieden!' : (timonWins ? 'Timon gewinnt!' : 'Paul gewinnt!');
+  document.getElementById('vsResultSub').textContent = sub;
+
+  var timonClass = timonWins ? 'result-card winner' : 'result-card loser';
+  var paulClass = paulWins ? 'result-card winner' : 'result-card loser';
+  var timonScoreClass = timonWins ? 'result-score' : 'result-score red';
+  var paulScoreClass = paulWins ? 'result-score' : 'result-score red';
+
+  var html =
+    '<div class="' + timonClass + '">' +
+    '<div class="result-player">TIMON</div>' +
+    '<div class="' + timonScoreClass + '">' + t + '</div>' +
+    '<div class="result-label">von 10 richtig</div>' +
+    (timonWins ? '<div class="result-winner-badge">&#127942; GEWINNER</div>' : '') +
+    '</div>' +
+    '<div class="' + paulClass + '">' +
+    '<div class="result-player">PAUL</div>' +
+    '<div class="' + paulScoreClass + '">' + p + '</div>' +
+    '<div class="result-label">von 10 richtig</div>' +
+    (paulWins ? '<div class="result-winner-badge">&#127942; GEWINNER</div>' : '') +
+    (draw ? '<div class="result-winner-badge" style="color:var(--muted)">UNENTSCHIEDEN</div>' : '') +
+    '</div>';
+
+  document.getElementById('vsResultCards').innerHTML = html;
+
+  // Show round result popup
+  document.getElementById('rpScoreT').textContent = t;
+  document.getElementById('rpScoreP').textContent = p;
+  document.getElementById('rpScoreT').className = 'round-popup-score-num' + (t >= p ? '' : ' loser');
+  document.getElementById('rpScoreP').className = 'round-popup-score-num' + (p >= t ? '' : ' loser');
+  if (draw) {
+    document.getElementById('rpTrophy').innerHTML = '&#129311;';
+    document.getElementById('rpWinner').textContent = 'UNENTSCHIEDEN';
+    document.getElementById('rpWinner').className = 'round-popup-winner draw';
+    document.getElementById('rpSub').textContent = 'Keiner gewinnt diese Runde!';
+  } else {
+    document.getElementById('rpTrophy').innerHTML = '&#127942;';
+    document.getElementById('rpWinner').textContent = timonWins ? 'TIMON' : 'PAUL';
+    document.getElementById('rpWinner').className = 'round-popup-winner ' + (timonWins ? 'timon' : 'paul');
+    document.getElementById('rpSub').textContent = 'gewinnt diese Runde!';
+  }
+  document.getElementById('roundPopup').classList.add('show');
+}
+
+function closeRoundPopup() {
+  document.getElementById('roundPopup').classList.remove('show');
+  showScreen('vsResultScreen');
+}
+
+function openVsStats() {
+  var history = loadVsHistory();
+  var timonWins = 0, paulWins = 0, draws = 0;
+  for (var i = 0; i < history.length; i++) {
+    var m = history[i];
+    if (m.t > m.p) timonWins++;
+    else if (m.p > m.t) paulWins++;
+    else draws++;
+  }
+
+  // Standings
+  var timonLeads = timonWins > paulWins;
+  var paulLeads = paulWins > timonWins;
+  document.getElementById('vsStandings').innerHTML =
+    '<div class="standing-box' + (timonLeads ? ' leader' : '') + '">' +
+    '<div class="standing-name">TIMON</div>' +
+    '<div class="standing-wins' + (timonLeads ? '' : ' red') + '">' + timonWins + '</div>' +
+    '<div class="standing-sub">Siege</div>' +
+    '</div>' +
+    '<div class="standing-box' + (paulLeads ? ' leader' : '') + '">' +
+    '<div class="standing-name">PAUL</div>' +
+    '<div class="standing-wins' + (paulLeads ? '' : ' red') + '">' + paulWins + '</div>' +
+    '<div class="standing-sub">Siege</div>' +
+    '</div>';
+  // Show draws if any
+  if (draws > 0) {
+    document.getElementById('vsStandings').innerHTML +=
+      '<div class="standing-box" style="grid-column:1/-1;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">' +
+      '<div class="standing-name" style="margin-bottom:0;">Unentschieden</div>' +
+      '<div style="font-family: Bebas Neue, sans-serif;font-size:28px;color:var(--muted);">' + draws + '</div>' +
+      '</div>';
+  }
+
+  // Match history
+  if (history.length === 0) {
+    document.getElementById('vsMatchHistory').innerHTML =
+      '<p style="color:var(--muted);font-size:14px;text-align:center;padding:24px 0;">Noch keine Runden gespielt.</p>';
+  } else {
+    var out = '';
+    for (var i = history.length - 1; i >= 0; i--) {
+      var m = history[i];
+      var roundNum = i + 1;
+      var winner = m.t > m.p ? 'Timon' : m.p > m.t ? 'Paul' : 'Unentschieden';
+      var detailId = 'match-detail-' + i;
+      var arrowId = 'match-arrow-' + i;
+
+      // Build detail rows
+      var detailRows = '<div class="detail-header">' +
+        '<div class="detail-header-lbl">Frage</div>' +
+        '<div class="detail-header-lbl">Timon</div>' +
+        '<div class="detail-header-lbl">Paul</div>' +
+        '</div>';
+      if (m.details) {
+        for (var j = 0; j < m.details.length; j++) {
+          var d = m.details[j];
+          var p1icon = d.p1 ? (d.p1.ok ? '&#x2705;' : '&#x274C;') : '-';
+          var p2icon = d.p2 ? (d.p2.ok ? '&#x2705;' : '&#x274C;') : '-';
+          detailRows += '<div class="detail-row">' +
+            '<div class="detail-q">' + esc(d.q) + '</div>' +
+            '<div class="detail-icon">' + p1icon + '</div>' +
+            '<div class="detail-icon">' + p2icon + '</div>' +
+            '</div>';
+        }
+      }
+
+      out += '<div class="match-item">' +
+        '<div class="match-header" onclick="toggleMatch(' + i + ')">' +
+        '<div>' +
+        '<div class="match-num">Runde ' + roundNum + ' &middot; ' + m.date + '</div>' +
+        '<div class="match-score">Timon ' + m.t + ' &ndash; ' + m.p + ' Paul</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<span class="match-winner-tag">' + winner + '</span>' +
+        '<span class="match-arrow" id="' + arrowId + '">&#9660;</span>' +
+        '</div>' +
+        '</div>' +
+        '<div class="match-detail" id="' + detailId + '">' + detailRows + '</div>' +
+        '</div>';
+    }
+    document.getElementById('vsMatchHistory').innerHTML = out;
+  }
+  showScreen('vsStatsScreen');
+}
+
+function toggleMatch(i) {
+  var detail = document.getElementById('match-detail-' + i);
+  var arrow = document.getElementById('match-arrow-' + i);
+  if (detail.classList.contains('open')) {
+    detail.classList.remove('open');
+    arrow.classList.remove('open');
+  } else {
+    detail.classList.add('open');
+    arrow.classList.add('open');
+  }
+}
+
+
 function fuzzyMatch(input, correct) {
   var a = input.toLowerCase().trim();
   var b = correct.toLowerCase().trim();
@@ -544,6 +1102,5 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
-
 </body>
 </html>
