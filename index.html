@@ -888,6 +888,7 @@ function stopHomePolling() {
 }
 
 function pollForChallenge() {
+  if (!myIdentity) return; // Don't show popup before identity chosen
   // Look for a round that is p1_done=false (still being played by opponent)
   // OR p1_done=true and p2_done=false (waiting for us)
   sbFetch('rounds?p2_done=eq.false&order=created_at.desc&limit=1&select=*').then(function(data) {
