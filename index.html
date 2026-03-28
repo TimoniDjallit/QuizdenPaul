@@ -252,14 +252,15 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
   <!-- VS START SCREEN -->
   <div class="screen" id="vsStartScreen">
     <div class="vs-title">VS<br>MODUS</div>
-    <p class="vs-sub">Jeder spielt auf seinem eigenen Geraet</p>
-    <div class="role-select-box" onclick="selectRole('timon')">
+    <p class="vs-sub">Wer weiss mehr?</p>
+    <div id="vsStartStatus" style="margin-bottom:16px;"></div>
+    <div class="role-select-box" id="timonBox" onclick="selectRole('timon')">
       <div class="role-select-name p1">TIMON</div>
-      <div class="role-select-sub">Neue Runde starten &mdash; Paul erhaelt den Code</div>
+      <div class="role-select-sub" id="timonBoxSub">Runde starten oder beitreten</div>
     </div>
-    <div class="role-select-box" onclick="selectRole('paul')">
+    <div class="role-select-box" id="paulBox" onclick="selectRole('paul')">
       <div class="role-select-name p2">PAUL</div>
-      <div class="role-select-sub">Code eingeben und mitspielen</div>
+      <div class="role-select-sub" id="paulBoxSub">Runde starten oder beitreten</div>
     </div>
     <button class="btn-secondary" onclick="openVsStats()">&#128200; VS Statistiken</button>
     <button class="btn-secondary" onclick="showScreen('startScreen')">&#8592; Hauptmenue</button>
@@ -272,24 +273,13 @@ body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%
     <div class="waiting-box">
       <div class="waiting-spinner"></div>
       <div class="waiting-title">Warte auf Paul...</div>
-      <p class="waiting-sub">Schick Paul diesen Code:</p>
-      <div class="round-code" id="vsRoundCode">----</div>
-      <p class="waiting-sub">Er gibt ihn in seiner App ein.</p>
+      <p class="waiting-sub">Paul wird benachrichtigt sobald er die App oeffnet.</p>
     </div>
     <button class="btn-secondary" onclick="checkPaulDone()">Aktualisieren &#8635;</button>
     <button class="btn-secondary" onclick="showScreen('vsStartScreen')">&#8592; Zurueck</button>
   </div>
 
-  <!-- PAUL CODE INPUT SCREEN -->
-  <div class="screen" id="vsCodeScreen">
-    <div class="vs-title">CODE<br>EINGEBEN</div>
-    <p class="vs-sub">Timons Rundencode</p>
-    <input class="answer-input" id="vsCodeInput" type="text" placeholder="z.B. AB12" maxlength="4"
-      style="text-align:center;font-family:Bebas Neue,sans-serif;font-size:36px;letter-spacing:8px;text-transform:uppercase;margin-bottom:16px;"/>
-    <button class="btn-primary" onclick="joinRound()">BEITRETEN</button>
-    <button class="btn-secondary" onclick="showScreen('vsStartScreen')">&#8592; Zurueck</button>
-    <p id="vsCodeError" style="color:var(--wrong);font-size:14px;text-align:center;margin-top:12px;display:none;">Code nicht gefunden. Nochmal versuchen!</p>
-  </div>
+
 
   <!-- VS QUIZ SCREEN -->
   <div class="screen" id="vsQuizScreen">
@@ -429,7 +419,7 @@ var Q = [
   {c:"Geografie",q:"Welches Land hat die groessten Lithiumvorkommen der Welt?",a:"Chile"},
   {c:"Geografie",q:"Wie heisst der Vulkan der 1815 die groesste Eruption der Neuzeit hatte?",a:"Tambora"},
   {c:"Geografie",q:"Wie heisst das Gebirge das Russland von Georgien trennt?",a:"Kaukasus"},
-  {c:"Geografie",q:"In welchem Land liegt das Tote Meer?",a:"Israel"},
+  {c:"Geografie",q:"In welchem Land liegt das Tote Meer?",a:"Palaestina"},
   {c:"Geografie",q:"Wie heisst die Hauptstadt von Irak?",a:"Bagdad"},
   {c:"Geografie",q:"Wie heisst der hoechste Berg Suedamerikas?",a:"Aconcagua"},
   {c:"Geografie",q:"Wie heisst die Hauptstadt von Kenia?",a:"Nairobi"},
@@ -689,6 +679,12 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
   if (id === 'startScreen') {
     startHomePolling();
+  } else if (id === 'vsStartScreen') {
+    stopHomePolling();
+    hideChallengePopup();
+    // Reset status and check round state
+    document.getElementById('vsStartStatus').innerHTML = '';
+    checkVsStartState();
   } else {
     stopHomePolling();
     hideChallengePopup();
@@ -888,9 +884,9 @@ function pollForChallenge() {
     // Show popup
     pendingChallengeId = round.id;
     pendingChallengeQuestions = round.questions;
-    var starter = vsRole === 'paul' ? 'Timon' : 'Der andere Spieler';
+    var starterName = round.starter === 'timon' ? 'Timon' : round.starter === 'paul' ? 'Paul' : 'Dein Gegner';
     document.getElementById('challengeTitle').textContent = 'Herausforderung!';
-    document.getElementById('challengeSub').textContent = starter + ' hat eine Runde gespielt. Du bist dran!';
+    document.getElementById('challengeSub').textContent = starterName + ' hat gespielt. Du bist dran!';
     document.getElementById('challengePopup').classList.add('show');
   }).catch(function() {});
 }
@@ -929,17 +925,95 @@ function acceptChallenge() {
   });
 }
 
+function checkVsStartState() {
+  sbFetch('rounds?p2_done=eq.false&order=created_at.desc&limit=1&select=id,p1_done,p1_score').then(function(data) {
+    var timonBox = document.getElementById('timonBox');
+    var paulBox = document.getElementById('paulBox');
+    var timonSub = document.getElementById('timonBoxSub');
+    var paulSub = document.getElementById('paulBoxSub');
+
+    if (!data || data.length === 0) {
+      // No active round - BOTH can start
+      timonBox.style.opacity = '1'; timonBox.style.cursor = 'pointer';
+      paulBox.style.opacity = '1'; paulBox.style.cursor = 'pointer';
+      timonSub.textContent = 'Neue Runde starten';
+      paulSub.textContent = 'Neue Runde starten';
+    } else {
+      var round = data[0];
+      if (!round.p1_done) {
+        // Someone is still playing - both locked
+        timonBox.style.opacity = '0.4'; timonBox.style.cursor = 'default';
+        paulBox.style.opacity = '0.4'; paulBox.style.cursor = 'default';
+        timonSub.textContent = 'Runde laeuft...';
+        paulSub.textContent = 'Runde laeuft...';
+      } else {
+        // p1 done, opponent needs to play - the one who didn't start can join
+        // We don't know who started from here, so show join for both
+        // selectRole handles the actual logic
+        timonBox.style.opacity = '0.4'; timonBox.style.cursor = 'default';
+        paulBox.style.opacity = '0.4'; paulBox.style.cursor = 'default';
+        timonSub.textContent = 'Gegner ist dran...';
+        paulSub.textContent = 'Gegner ist dran...';
+        // Enable only the one who hasn't played (stored in round as starter)
+        var starter = round.starter || '';
+        if (starter === 'timon') {
+          paulBox.style.opacity = '1'; paulBox.style.cursor = 'pointer';
+          paulSub.textContent = 'Runde beitreten!';
+        } else if (starter === 'paul') {
+          timonBox.style.opacity = '1'; timonBox.style.cursor = 'pointer';
+          timonSub.textContent = 'Runde beitreten!';
+        } else {
+          // Fallback - enable both
+          timonBox.style.opacity = '1'; timonBox.style.cursor = 'pointer';
+          paulBox.style.opacity = '1'; paulBox.style.cursor = 'pointer';
+          timonSub.textContent = 'Runde beitreten!';
+          paulSub.textContent = 'Runde beitreten!';
+        }
+      }
+    }
+  }).catch(function() {});
+}
+
 function selectRole(role) {
   vsRole = role;
-  if (role === 'timon') {
-    startVsRound();
-  } else {
-    showScreen('vsCodeScreen');
-    setTimeout(function() {
-      var inp = document.getElementById('vsCodeInput');
-      if (inp) inp.focus();
-    }, 100);
-  }
+  // Check current round state
+  sbFetch('rounds?p2_done=eq.false&order=created_at.desc&limit=1&select=*').then(function(data) {
+    if (!data || data.length === 0) {
+      // No active round - this player starts a new one
+      startVsRound();
+    } else {
+      var round = data[0];
+      if (!round.p1_done) {
+        // Someone is still playing - block
+        document.getElementById('vsStartStatus').innerHTML =
+          '<div style="background:rgba(224,90,43,.1);border:1px solid var(--wrong);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--wrong);text-align:center;">Warte bis die aktuelle Runde beendet ist!</div>';
+        return;
+      }
+      // p1 done - check if this player is the opponent (can join) or the starter (must wait)
+      if (round.starter === role) {
+        // This player already played
+        document.getElementById('vsStartStatus').innerHTML =
+          '<div style="background:rgba(240,192,64,.08);border:1px solid var(--accent);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--accent);text-align:center;">Du hast bereits gespielt. Warte auf den Gegner!</div>';
+        return;
+      }
+      // This player is the opponent - join the round
+      vsRoundId = round.id;
+      vsQuestions = round.questions;
+      vsQIdx = 0;
+      vsCurrentPlayer = 2;
+      vsAnswered = false;
+      vsScores = [round.p1_score || 0, 0];
+      vsRoundDetails = [];
+      for (var i = 0; i < vsQuestions.length; i++) {
+        var p1d = round.p1_details ? round.p1_details[i] : null;
+        vsRoundDetails.push({q: Q[vsQuestions[i]].q, a: Q[vsQuestions[i]].a, cat: Q[vsQuestions[i]].c, p1: p1d, p2: null});
+      }
+      document.getElementById('vsPlayerTag').className = 'mp-player-tag p2';
+      document.getElementById('vsPlayerTag').textContent = role === 'paul' ? 'PAUL' : 'TIMON';
+      showScreen('vsQuizScreen');
+      vsRenderNext();
+    }
+  }).catch(function() { startVsRound(); });
 }
 
 function startVsRound() {
@@ -959,12 +1033,13 @@ function startVsRound() {
   }
 
   vsRoundId = genCode();
-  document.getElementById('vsRoundCode').textContent = vsRoundId;
+  
 
   // Save round to Supabase
   sbFetch('rounds', 'POST', {
     id: vsRoundId,
     questions: indices,
+    starter: vsRole,
     p1_done: false,
     p2_done: false
   }).then(function() {
@@ -982,34 +1057,7 @@ function startVsRound() {
   });
 }
 
-function joinRound() {
-  var code = document.getElementById('vsCodeInput').value.trim().toUpperCase();
-  if (code.length < 4) return;
-  document.getElementById('vsCodeError').style.display = 'none';
 
-  sbFetch('rounds?id=eq.' + code + '&select=*').then(function(data) {
-    if (!data || data.length === 0) {
-      document.getElementById('vsCodeError').style.display = 'block';
-      return;
-    }
-    var round = data[0];
-    vsRoundId = code;
-    vsQuestions = round.questions;
-    vsQIdx = 0;
-    vsCurrentPlayer = 2;
-    vsAnswered = false;
-    vsScores = [round.p1_score || 0, 0];
-    vsRoundDetails = [];
-    for (var i = 0; i < vsQuestions.length; i++) {
-      var p1d = round.p1_details ? round.p1_details[i] : null;
-      vsRoundDetails.push({q: Q[vsQuestions[i]].q, a: Q[vsQuestions[i]].a, cat: Q[vsQuestions[i]].c, p1: p1d, p2: null});
-    }
-    document.getElementById('vsPlayerTag').className = 'mp-player-tag p2';
-    document.getElementById('vsPlayerTag').textContent = 'PAUL';
-    showScreen('vsQuizScreen');
-    vsRenderNext();
-  });
-}
 
 function vsRenderNext() {
   if (vsQIdx >= vsQuestions.length) {
