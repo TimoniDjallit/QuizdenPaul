@@ -860,7 +860,7 @@ function vsSubmit() {
   inp.classList.add(ok ? 'correct' : 'wrong');
   var fb = document.getElementById('vsFeedbackBar');
   fb.className = 'feedback-bar show ' + (ok ? 'correct-fb' : 'wrong-fb');
-  document.getElementById('vsFbIcon').textContent = ok ? '&#x2705;' : '&#x274C;';
+  document.getElementById('vsFbIcon').textContent = ok ? '✅' : '❌';
   document.getElementById('vsFbText').innerHTML = ok
     ? '<strong>Richtig!</strong>'
     : '<strong>Falsch!</strong> Die richtige Antwort war: <em>' + esc(vsCorrectText) + '</em>';
@@ -1013,8 +1013,8 @@ function openVsStats() {
       if (m.details) {
         for (var j = 0; j < m.details.length; j++) {
           var d = m.details[j];
-          var p1icon = d.p1 ? (d.p1.ok ? '&#x2705;' : '&#x274C;') : '-';
-          var p2icon = d.p2 ? (d.p2.ok ? '&#x2705;' : '&#x274C;') : '-';
+          var p1icon = d.p1 ? (d.p1.ok ? '✅' : '❌') : '-';
+          var p2icon = d.p2 ? (d.p2.ok ? '✅' : '❌') : '-';
           detailRows += '<div class="detail-row">' +
             '<div class="detail-q">' + esc(d.q) + '</div>' +
             '<div class="detail-icon">' + p1icon + '</div>' +
